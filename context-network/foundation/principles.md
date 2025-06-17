@@ -1,7 +1,7 @@
-# Software Project Principles
+# PackFS Design Principles
 
 ## Purpose
-This document outlines the core principles and standards that guide decision-making and development across software projects using this context network template.
+This document outlines the core principles and standards that guide decision-making and development for PackFS - an NPM package providing filesystem access for LLM agent frameworks.
 
 ## Classification
 - **Domain:** Core Concept
@@ -13,83 +13,87 @@ This document outlines the core principles and standards that guide decision-mak
 
 ### Core Values
 
-These fundamental values drive the Software Project Context Network approach:
+These fundamental values drive PackFS development:
 
-1. **Knowledge Preservation**
-   Software development knowledge is a valuable asset that must be deliberately preserved. The context behind decisions is often more valuable than the decisions themselves.
+1. **Safety First**
+   Filesystem access inherently carries security risks. Every design decision must prioritize safety and security, with multiple layers of protection against destructive operations and unauthorized access.
 
-2. **Separation of Concerns**
-   Planning artifacts (why and how) should be clearly separated from implementation artifacts (what). This separation enables each domain to evolve at its appropriate pace.
+2. **LLM-Centric Design**
+   All interfaces, error messages, and operations must be designed specifically for LLM agent comprehension and effective use, not just human developers.
 
-3. **Cognitive Load Management**
-   Information should be structured to minimize cognitive load for both human developers and AI agents, enabling faster comprehension and more effective collaboration.
+3. **Intelligent Content Management**
+   Files often exceed LLM context windows. PackFS must intelligently handle large content through semantic chunking, summarization, and preview generation.
 
-4. **Temporal Awareness**
-   Software knowledge has temporal dimensions that must be explicitly managed, documenting not just current state but evolution history.
+4. **Framework Agnostic**
+   PackFS provides clean, composable interfaces that work with any agent framework, avoiding lock-in to specific implementations.
 
-5. **Multi-Perspective Documentation**
-   Software systems must be understood from multiple viewpoints (user, developer, operator, architect) with explicit mappings between different mental models.
+5. **Performance Awareness**
+   Filesystem operations can be expensive. PackFS must optimize for performance through intelligent caching, async patterns, and efficient content processing.
 
 ### Design Principles
 
-These key principles guide design decisions in software projects:
+These key principles guide PackFS design decisions:
 
-1. **Clear Domain Boundaries**
-   Maintain strict separation between the context network (planning, architecture, decisions) and the codebase (implementation).
+1. **Semantic Awareness**
+   Operations understand content meaning, not just file paths. PackFS analyzes file content to provide intelligent chunking, summarization, and metadata extraction.
    
-   *Example:* Architecture diagrams, decision records, and design discussions belong in the context network, while source code, configuration files, and build scripts belong in the project structure.
+   *Example:* When reading a large document, PackFS automatically detects semantic boundaries and provides structured chunks rather than arbitrary byte ranges.
 
-2. **Progressive Disclosure**
-   Structure information to allow incremental exploration from high-level concepts to detailed implementations.
+2. **Context Window Optimization**
+   All operations are designed with LLM context window limitations in mind. Large files are intelligently processed to fit within available context.
    
-   *Example:* Start with system overview, then component maps, then specific component documentation, and finally implementation details.
+   *Example:* Files larger than 32KB trigger automatic preview generation with key statistics, structure analysis, and semantic summaries.
 
-3. **Bidirectional Traceability**
-   Maintain clear connections between requirements, decisions, designs, and implementations.
+3. **Multiple Defense Layers**
+   Security is implemented through multiple independent layers: path validation, sandboxing, permission systems, and virtual filesystems.
    
-   *Example:* Link architecture decisions to the components they affect, and link components back to the decisions that shaped them.
+   *Example:* Even if path validation fails, sandboxing prevents access outside allowed directories, and permissions limit operation types.
 
-4. **Living Documentation**
-   Documentation must evolve with the code or become actively harmful.
+4. **Interface-Driven Architecture**
+   Clean abstractions enable pluggable backends and framework integrations without coupling to specific implementations.
    
-   *Example:* Establish clear triggers for documentation updates linked to code changes, and implement "documentation debt" tracking.
+   *Example:* The same PackFS interface works with memory, disk, or cloud storage backends, and integrates consistently across different agent frameworks.
 
-5. **Explicit Relationships**
-   Make relationships between information nodes explicit and navigable.
+5. **Graceful Degradation**
+   When optimal operations aren't possible, PackFS degrades gracefully while maintaining functionality and providing clear feedback.
    
-   *Example:* Use standardized relationship types (depends-on, implements, extends) to connect related information.
+   *Example:* If semantic chunking fails, fall back to fixed-size chunking; if file access fails, provide cached metadata; if all else fails, return structured error information.
 
 ### Standards and Guidelines
 
-These standards and guidelines apply to software projects using this context network:
+These standards and guidelines apply specifically to PackFS development:
 
-#### Quality Standards
+#### API Design Standards
 
-- All architecture decisions must be documented with context, consequences, and alternatives
-- Component documentation must include purpose, responsibilities, interfaces, and dependencies
-- Process documentation must include triggers, steps, outcomes, and common issues
-- Technical debt must be explicitly documented with impact assessment and remediation plans
+- All operations must return structured results with consistent error handling
+- Error messages must be LLM-friendly with recovery suggestions and context
+- Interfaces must be TypeScript-first with comprehensive type definitions
+- Operations must be async/await compatible with proper Promise handling
+- All public APIs must include JSDoc documentation with examples
 
-#### Structural Standards
+#### Security Standards
 
-- Context network structure must follow the established hierarchy with appropriate index files
-- Information nodes must include classification, relationships, and metadata
-- Navigation paths must be maintained for different roles and tasks
-- File sizes should be limited to fit within reasonable reading sessions and LLM context windows
+- Path validation must prevent directory traversal attacks through multiple checks
+- All file operations must respect configured permission boundaries
+- Sandboxing must be enforced at the filesystem backend level
+- Virtual filesystems must be used for testing and untrusted operations
+- Security decisions must include threat models and mitigation strategies
 
-#### Safety and Security Standards
+#### Performance Standards
 
-- Security architecture must be explicitly documented
-- Security decisions must include threat models and risk assessments
-- Security-sensitive information must be appropriately protected
-- Security considerations must be traceable through the context network
+- File operations must complete within 1 second for files under 10MB
+- Caching must reduce repeated filesystem operations by at least 60%
+- Memory usage must remain bounded even for large file operations
+- Concurrent operations must be supported without blocking
+- Performance metrics must be tracked and reported
 
-#### Performance and Efficiency Standards
+#### Content Processing Standards
 
-- Performance requirements must be explicitly documented
-- Performance-critical components must be identified
-- Performance trade-offs must be documented with rationale
-- Performance testing approaches must be described
+- Semantic chunking must maintain coherence with 0.75+ similarity thresholds
+- Preview generation must complete within 500ms for common file types
+- Binary file handling must support 1000+ formats through Apache Tika
+- Metadata extraction must provide structured, searchable information
+- Large file processing must not exceed available memory limits
 
 ### Process Principles
 
@@ -112,44 +116,45 @@ These principles guide development and operational processes:
 
 ### Decision-Making Framework
 
-The framework for making decisions in software projects:
+The framework for making PackFS-specific decisions:
 
 #### Decision Criteria
 
-- Alignment with project goals and constraints
-- Technical feasibility and sustainability
-- Impact on system quality attributes (performance, security, maintainability)
-- Team capabilities and familiarity
-- Long-term maintenance considerations
-- Integration with existing systems
+- **Security Impact**: Does this decision introduce or mitigate security risks?
+- **LLM Compatibility**: How well does this work with LLM agent patterns and limitations?
+- **Performance Implications**: What are the performance characteristics and trade-offs?
+- **Framework Integration**: How does this affect integration with different agent frameworks?
+- **Maintenance Burden**: What ongoing maintenance will this require?
+- **User Experience**: How does this impact developers using PackFS?
 
 #### Trade-off Considerations
 
-- Speed vs. Quality
-- Simplicity vs. Flexibility
-- Immediate needs vs. Future extensibility
-- Development effort vs. Operational complexity
-- Standardization vs. Optimization
+- **Security vs. Performance**: More security checks may slow operations
+- **Simplicity vs. Intelligence**: Smart features add complexity but improve usability
+- **Memory vs. Speed**: Caching improves speed but uses memory
+- **Generality vs. Optimization**: Generic interfaces vs. format-specific optimizations
+- **Safety vs. Flexibility**: Strict sandboxing vs. operational flexibility
 
 ### Principle Application
 
-How these principles should be applied in practice:
+How these principles should be applied in PackFS development:
 
 #### When Principles Conflict
 
 When principles conflict, prioritize based on:
-1. Knowledge preservation (avoid irreversible loss of critical information)
-2. User/customer impact (prioritize principles that most directly affect end users)
-3. Team effectiveness (consider what enables the team to work most effectively)
-4. Project constraints (acknowledge practical limitations of time, budget, and resources)
+1. **Safety First**: Security and data protection always take precedence
+2. **LLM Agent Needs**: Optimize for agent comprehension and effective use
+3. **Framework Compatibility**: Maintain broad framework support over specific optimizations
+4. **Performance Requirements**: Meet performance standards while maintaining safety
+5. **Developer Experience**: Balance ease of use with powerful capabilities
 
 #### Exceptions to Principles
 
 Exceptions may be considered under these circumstances:
-- Emergency situations requiring immediate action
-- Exploratory prototyping phases (with the understanding that proper documentation will follow)
-- Legacy system integration with incompatible documentation approaches
-- When the cost of full documentation clearly exceeds the benefit for trivial components
+- **Performance Critical Paths**: Where strict adherence would cause unacceptable performance
+- **Legacy System Integration**: When working with existing systems that don't follow modern patterns
+- **Experimental Features**: During research phases with clear documentation of deviations
+- **Emergency Security Fixes**: When immediate action is required to address vulnerabilities
 
 ## Relationships
 - **Parent Nodes:** [foundation/project_definition.md]

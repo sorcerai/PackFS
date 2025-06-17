@@ -1,74 +1,99 @@
-# Software Project Context Network
-This project is a starter template specifically designed for software development projects with built-in LLM management and navigation capabilities (more info at https://jwynia.github.io/context-networks/). It provides a structured approach to managing the complex web of decisions, designs, and domain knowledge that underlies every software project.
+# PackFS - Filesystem Access for LLM Agent Frameworks
 
-Unlike generic context networks, this template is tailored to address the unique knowledge management challenges of software development: code evolves rapidly, technical decisions have long-lasting impacts, team knowledge is often implicit, and the gap between "how we built it" and "what we built" creates dangerous knowledge silos.
+PackFS is an NPM package that provides robust, secure filesystem access specifically designed for LLM agent frameworks. It offers a comprehensive library of interface functions that consuming frameworks can wrap in tools, enabling intelligent file operations while maintaining safety and performance.
+
+This project leverages a context network approach for documentation and knowledge management (more info at https://jwynia.github.io/context-networks/). The context network captures the complex design decisions, architectural patterns, and domain knowledge that underlies PackFS's development, ensuring maintainability and enabling effective collaboration between human developers and AI agents.
+
+## Key Features
+
+PackFS addresses the critical challenges identified in filesystem tool design for LLM agents:
+
+- **Intelligent Content Management**: Semantic chunking, hierarchical summarization, and intelligent preview generation for files exceeding context windows
+- **Robust Abstraction Layers**: Interface-driven design with composable backends enabling seamless switching between memory, disk, and cloud storage
+- **Safety-First Design**: Path validation, permission systems, virtual filesystems, and comprehensive error handling designed specifically for LLM comprehension
 
 ## Getting Started
-To use this software project context network:
 
-1. **Clone this template** for your new software project
-2. **Connect with an LLM agent** that has file access to all files in the project folder (via IDE coding tools like Cursor or VSCode with Cline)
-3. **Set up the prompts** (see below) to ensure the agent understands context networks
-4. **Start a planning conversation** describing your software project, goals, architecture, and constraints
-5. **Let the agent enhance the context network** with your project-specific information
-6. **Begin development tasks** with clear separation between planning (context network) and implementation (codebase)
+### Installation
+```bash
+npm install packfs
+```
 
-This template maintains a clear boundary between knowledge artifacts (context network) and implementation artifacts (codebase), allowing your team to document "why" and "how" separately from the code that represents "what is."
+### Basic Usage
+```typescript
+import { PackFS } from 'packfs';
 
-## Cost
-Because context networks are a relatively cutting-edge approach to collaboration with LLM AI agents, these tools do cost money and some of the best of them can cost more money than you may be expecting. The costs on such things are dropping and much of what we're doing with context networks is figuring out the ways to work that will be more widespread next year and beyond, when these costs drop. If these tools are too expensive for your budget, that probably means you need to wait a bit.
+const fs = new PackFS({
+  backend: 'disk',
+  sandbox: './workspace',
+  permissions: ['read', 'write']
+});
 
-## Tools
-Cursor (https://www.cursor.com/) is an all-in-one that comes with LLM chat and an agent that can act on the files.
+// Intelligent file operations designed for LLM agents
+const content = await fs.readWithContext('large-file.txt');
+const preview = await fs.generatePreview('document.pdf');
+const metadata = await fs.getEnhancedMetadata('data.json');
+```
 
-Cursor is built on VSCode (https://code.visualstudio.com/), which is a more generic code/text editor that can have plugins added. One we use a lot with context networks is Cline (https://cline.bot/). Cline's agent can be pointed at a wide range of LLM APIs that you use your own keys/billing for or their own management of that. A popular solution is to use OpenRouter (https://openrouter.ai/) which lets you use most of the LLM models available today.
+### Framework Integration
+PackFS is designed to be wrapped by LLM agent frameworks:
 
-## Patterns
-### Prompts
-For whatever agent you use, you need to include instructions in the system prompt or custom instructions that tell it about context networks and how to navigate them. The prompt in /inbox/custom-instructions-prompt.md is the one a lot of people are using for Cline with Claude Sonnet as the model.
+```typescript
+// Example: LangChain integration
+import { PackFSToolkit } from 'packfs/langchain';
 
-Add it in either your agent's configuration screen or via its file-based prompt management system.
+const toolkit = new PackFSToolkit({
+  filesystem: fs,
+  allowedOperations: ['read', 'write', 'list']
+});
+```
 
-### Software-Specific Documentation Patterns
-This template includes specialized patterns for software documentation:
+## Architecture
 
-1. **Architecture Decision Records (ADRs)** - Document important technical decisions, their context, and consequences
-2. **Component Documentation** - Structured documentation of software components and their interfaces
-3. **Process Documentation** - Clear documentation of development, testing, and deployment processes
-4. **Technical Debt Registry** - Track known compromises and their planned resolution
+PackFS implements a three-layer architecture optimized for LLM agent interactions:
 
-### Plan/Act and Specific Scope
-Cline and many other agents have multiple modes, usually offering one that lets you have a conversation with it separate from it taking action on files. In Cline, that's "Plan". In that mode, it won't make any changes to your files.
+### Core Layer
+- **FileSystem Interface**: Abstract filesystem operations with pluggable backends
+- **Content Processors**: Semantic chunking, summarization, and preview generation
+- **Security Engine**: Path validation, sandboxing, and permission management
 
-Use that mode aggressively to get to a specific plan for what will happen when you toggle to act. That plan should have a clear definition of what "done" will look like, should be as close to a single action as possible.
+### Integration Layer
+- **Framework Adapters**: Pre-built integrations for LangChain, AutoGPT, CrewAI, and Semantic Kernel
+- **Tool Wrappers**: Ready-to-use tool definitions for common agent frameworks
+- **Error Handlers**: LLM-friendly error messages with recovery suggestions
 
-That often means that the action is to detail out a list of tasks that you'll actually have the agent do separately, one at a time. The "do one thing" can mean break the existing scope down another level to get to a more detailed plan. 
+### Backend Layer
+- **Storage Backends**: Memory, disk, cloud storage with unified interface
+- **Virtual Filesystems**: Safe testing and agent isolation environments
+- **Caching System**: Three-tier caching for optimal performance
 
-Basically, the more specific the action that Act mode or its equivalent is given, the better job it will do at managing token budget, at not volunteering to do a bunch of extra things,  and the more likely it does something you've already had a chance to approve.
+## Design Principles
 
-### Monitor and Interrupt
-The more you actually read and monitor what your agent is doing for anything that you disagree with or sounds incorrect and step in to interrupt, the better your context network will mature. Like hiring a new assistant, where for the first few weeks, you have to tell them your preferences and ways you want things done, it pays off over the long haul.
+PackFS is built on research-backed principles for LLM filesystem tools:
 
-Interrupt, flip to Plan mode, and ask things like:
+1. **Semantic Awareness**: Operations understand content meaning, not just file paths
+2. **Context Window Optimization**: Intelligent content management for large files
+3. **Safety First**: Multiple layers of protection against destructive operations
+4. **Framework Agnostic**: Clean interfaces that work with any agent framework
+5. **TypeScript Native**: Full type safety and excellent developer experience
 
-* How can we document into the context network a way of working so we don't repeat (the problem/misunderstanding above)?
-* I'd really prefer we always write out a plan with tasks before doing things ad hoc. How can we clarify what's in the context network to make that our process going forward?
+## Documentation
 
+Comprehensive documentation is available in the context network:
+- **Architecture Decisions**: See `context-network/decisions/`
+- **Component Documentation**: See `context-network/elements/`
+- **Integration Guides**: See `context-network/processes/`
+- **Research Foundation**: See `inbox/llm-filesystem-tools-report.md`
 
-### Retrospective
-At the end of tasks and periodically AS a new task, ask how things could be improved. For task end, "What from this conversation and task should be documented in the context network?" For periodic retrospectives, "What have we learned in this project that could be used to improve the context network for our efforts going forward?"
+## Contributing
 
-## Software Project Success Metrics
+PackFS development follows a context network approach. Before contributing:
 
-This context network template helps measure success through:
+1. Review the context network documentation in `./context-network/`
+2. Understand the design principles and architectural decisions
+3. Follow the documented development processes
+4. Update relevant context network nodes with your changes
 
-- **Time to first meaningful contribution** for new developers
-- **Frequency of "archaeology" requests** (digging for lost knowledge)
-- **Documentation coverage** of major components
-- **Decision traceability** percentage
-- **Documentation update frequency** relative to code changes
-- **Developer confidence** in making changes
-- **Stakeholder understanding** of system state
-- **Reduction in repeated mistakes**
+## License
 
-By maintaining a well-structured context network alongside your codebase, your team builds a shared brain that enables faster onboarding, better decisions, and more confident evolution of complex software systems.
+MIT License - see LICENSE file for details.
