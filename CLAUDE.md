@@ -51,13 +51,21 @@ The package includes these npm scripts:
 
 ## Important Context
 
-The `/context-network/` directory contains comprehensive documentation:
-- `architecture/` - Component maps and system design
-- `decisions/` - Architecture Decision Records
-- `foundation/` - Core project definitions
+The `/context-network/` directory contains comprehensive documentation and **serves as the single source of truth for the entire project**:
+- `architecture/` - Component maps, system design, and implementation details
+- `decisions/` - Architecture Decision Records (ADRs)
+- `foundation/` - Core project definitions and principles
 - `planning/` - Roadmaps and milestones
+- `processes/` - Development workflows and procedures
+- `meta/` - Documentation maintenance guides
 
-Review these documents when implementing new features to maintain consistency with the planned architecture.
+**Critical**: The context network must ALWAYS be kept in sync with the code. Before making any changes:
+1. Check relevant documents in the context network
+2. Update documentation BEFORE implementing changes
+3. Ensure all changes are reflected back in the context network
+4. Follow the maintenance guide at `/context-network/meta/context_network_maintenance.md`
+
+This is not optional documentation—it is the project's living knowledge base and authoritative source.
 
 ## Security Considerations
 

@@ -42,10 +42,11 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 ### ADRs by Status
 
 #### Proposed
-- *None yet*
+- [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
 
 #### Accepted
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
+- [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md)
 
 #### Deprecated
 - *None yet*
@@ -59,10 +60,11 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 - *None yet*
 
 #### Architecture
-- *None yet*
+- [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
 
 #### Technology
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
+- [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md)
 
 #### Process
 - *None yet*
@@ -75,8 +77,10 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 
 ### ADRs by Chronology
 
-#### 2025
-- [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md) - June 18
+#### 2024
+- [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md) - January 15
+- [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md) - January 18
+- [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md) - January 18
 
 ### ADRs by Component
 
@@ -121,9 +125,10 @@ When a decision's status changes:
 - **Update Patterns:** This document should be updated whenever a new ADR is added or an existing ADR's status changes
 
 ## Metadata
-- **Created:** [Date]
-- **Last Updated:** [Date]
-- **Updated By:** [Role/Agent]
+- **Created:** Initial project setup
+- **Last Updated:** 2024-01-18
+- **Updated By:** Implementation team
 
 ## Change History
-- [Date]: Initial creation of decision index
+- Initial: Created decision index
+- 2024-01-18: Added ADR-002 for minimum viable package implementation

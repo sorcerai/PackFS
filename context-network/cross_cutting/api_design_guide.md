@@ -13,28 +13,28 @@ This document provides guidelines and standards for designing APIs across the sy
 
 ### API Design Principles
 
-These core principles should guide all API design decisions:
+These core principles guide all API design decisions in PackFS:
 
 1. **Consistency**
-   APIs should follow consistent patterns, naming conventions, and behaviors across the system.
+   APIs follow consistent patterns, naming conventions, and behaviors across the system. All async operations return Promises, all configuration uses readonly objects.
 
 2. **Simplicity**
-   APIs should be as simple as possible but no simpler. Favor intuitive designs that are easy to understand and use correctly.
+   APIs are as simple as possible but no simpler. The FileSystem interface provides intuitive methods like `readFile()` and `writeFile()`.
 
 3. **Evolvability**
-   APIs should be designed to evolve over time without breaking existing clients.
+   APIs are designed to evolve without breaking existing clients. Abstract classes and configuration objects enable extension.
 
 4. **Discoverability**
-   APIs should be self-documenting and easy to explore, with clear patterns and conventions.
+   APIs are self-documenting with TypeScript types, clear method names, and comprehensive JSDoc comments.
 
 5. **Robustness**
-   APIs should handle errors gracefully and provide meaningful feedback to clients.
+   APIs handle errors gracefully with descriptive error messages and validation result objects.
 
 6. **Security by Design**
-   Security considerations should be built into APIs from the beginning, not added as an afterthought.
+   Security is built-in through the SecurityEngine, PathValidator, and configuration-based policies.
 
 7. **Performance Awareness**
-   APIs should be designed with performance considerations in mind, avoiding unnecessary overhead.
+   APIs are designed for performance with async operations, efficient data structures, and configurable limits.
 
 ### API Styles
 
@@ -136,27 +136,49 @@ For GraphQL APIs:
 
 #### Internal API Guidelines
 
-For internal service-to-service APIs:
+For internal library APIs (as implemented in PackFS):
 
 1. **Contract First**
-   - Define and document the API contract before implementation
-   - Use interface definitions or schema languages (e.g., Protocol Buffers, OpenAPI)
-   - Treat the contract as the source of truth
+   - Define TypeScript interfaces before implementation
+   - Use abstract classes for extensible contracts (e.g., `FileSystemInterface`)
+   - Export types separately from implementations
 
-2. **Versioning**
-   - Version all internal APIs explicitly
-   - Support backward compatibility within major versions
-   - Communicate breaking changes clearly
+2. **Configuration Pattern**
+   - Use configuration objects for flexibility
+   - Mark all config properties as `readonly`
+   - Provide sensible defaults
+   
+   ```typescript
+   export interface SecurityConfig {
+     readonly sandboxPath?: string;
+     readonly maxFileSize: number;
+     readonly allowedExtensions: string[];
+     readonly blockedPaths: string[];
+     readonly validatePaths: boolean;
+   }
+   ```
 
 3. **Error Handling**
-   - Use consistent error codes and formats
-   - Include enough detail for debugging
-   - Log errors comprehensively
+   - Return descriptive Error instances
+   - Use ValidationResult pattern for validation
+   - Never expose system internals in errors
+   
+   ```typescript
+   export interface ValidationResult {
+     readonly isValid: boolean;
+     readonly error?: string;
+     readonly normalizedPath?: string;
+   }
+   ```
 
-4. **Performance**
-   - Optimize for the common case
-   - Consider batching for high-frequency operations
-   - Be mindful of payload sizes
+4. **Async Patterns**
+   - All I/O operations return Promises
+   - No callback-style APIs
+   - Support async/await usage
+   
+   ```typescript
+   abstract readFile(path: string, options?: ReadOptions): Promise<string | Buffer>;
+   ```
 
 ### Data Formats
 
@@ -301,10 +323,84 @@ APIs should be tested for:
 - **Related Tasks:** API design, API review, integration planning
 - **Update Patterns:** This document should be updated when new API design patterns emerge or existing guidelines need refinement
 
+### PackFS API Examples
+
+#### Core FileSystem Interface
+```typescript
+// Abstract base class pattern
+export abstract class FileSystemInterface {
+  abstract readFile(path: string, options?: ReadOptions): Promise<string | Buffer>;
+  abstract writeFile(path: string, data: string | Buffer, options?: WriteOptions): Promise<void>;
+  abstract exists(path: string): Promise<boolean>;
+  abstract stat(path: string): Promise<FileMetadata>;
+  abstract readdir(path: string): Promise<string[]>;
+  abstract mkdir(path: string, recursive?: boolean): Promise<void>;
+  abstract remove(path: string, recursive?: boolean): Promise<void>;
+  abstract copy(source: string, destination: string): Promise<void>;
+  abstract move(source: string, destination: string): Promise<void>;
+}
+```
+
+#### Configuration Pattern
+```typescript
+// Constructor accepts configuration object
+export class SecurityEngine {
+  constructor(private readonly config: SecurityConfig) {}
+}
+
+// Usage
+const security = new SecurityEngine({
+  maxFileSize: 1024 * 1024,
+  allowedExtensions: ['txt', 'md'],
+  blockedPaths: ['/etc', '/root'],
+  validatePaths: true
+});
+```
+
+#### Framework Integration Pattern
+```typescript
+// Consistent tool definition across frameworks
+export class PackFSLangChainTool {
+  getToolDefinition() {
+    return {
+      name: this.config.toolName,
+      description: this.config.description,
+      parameters: {
+        type: 'object',
+        properties: {
+          operation: { type: 'string', enum: ['read', 'write', 'list'] },
+          path: { type: 'string', description: 'File path' },
+          content: { type: 'string', description: 'Content for write' }
+        },
+        required: ['operation', 'path']
+      }
+    };
+  }
+  
+  async execute(operation: string, path: string, content?: string): Promise<string> {
+    // Implementation
+  }
+}
+```
+
+#### Export Structure
+```typescript
+// Main entry point exports
+export * from './core/index';
+export * from './backends/index';
+export * from './processors/index';
+
+// Framework-specific entry points
+// import { PackFSLangChainTool } from '@packfs/core/langchain';
+// import { PackFSAutoGPTPlugin } from '@packfs/core/autogpt';
+// import { PackFSCrewAITool } from '@packfs/core/crewai';
+```
+
 ## Metadata
-- **Created:** [Date]
-- **Last Updated:** [Date]
-- **Updated By:** [Role/Agent]
+- **Created:** Initial API design
+- **Last Updated:** 2024-01-18
+- **Updated By:** Implementation team
 
 ## Change History
-- [Date]: Initial creation of API design guide
+- Initial: Created API design guide template
+- 2024-01-18: Updated with PackFS implementation examples and patterns
