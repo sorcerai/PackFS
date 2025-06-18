@@ -45,7 +45,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 - *None yet*
 
 #### Accepted
-- *None yet*
+- [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
 
 #### Deprecated
 - *None yet*
@@ -62,7 +62,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 - *None yet*
 
 #### Technology
-- *None yet*
+- [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
 
 #### Process
 - *None yet*
@@ -76,7 +76,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 ### ADRs by Chronology
 
 #### 2025
-- *None yet*
+- [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md) - June 18
 
 ### ADRs by Component
 
