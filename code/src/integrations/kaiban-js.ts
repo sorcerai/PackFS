@@ -132,17 +132,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
           },
           collaboration: {
             type: 'object',
-            description: 'Multi-agent collaboration options',
-            properties: {
-              shareWith: { 
-                type: 'array', 
-                items: { type: 'string' },
-                description: 'Agent IDs to share results with' 
-              },
-              lockFile: { type: 'boolean', description: 'Lock file for exclusive access' },
-              notifyAgents: { type: 'boolean', description: 'Notify other agents of changes' },
-              taskId: { type: 'string', description: 'Task ID for coordination' }
-            }
+            description: 'Multi-agent collaboration options'
           },
           options: {
             type: 'object',
@@ -248,9 +238,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         data: result,
         metadata: {
           executionTime: Date.now() - startTime,
-          operationType: params.action || 'natural_query',
-          agentId: config.kaiban?.agentId || context?.agentId,
-          taskId: params.collaboration?.taskId || context?.taskId
+          operationType: params.action || 'natural_query'
         }
       };
 
@@ -319,8 +307,12 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
       }
     }
 
-    // Handle workflow intents
-    return await config.filesystem.executeWorkflow(intent);
+    // Handle workflow intents - only if it has workflow structure
+    if ('steps' in intent) {
+      return await config.filesystem.executeWorkflow(intent);
+    }
+    
+    throw new Error('Unrecognized intent type');
   }
 
   private async executeKaibanAction(config: KaibanIntegrationConfig, params: any, context?: any): Promise<any> {

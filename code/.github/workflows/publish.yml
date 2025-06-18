@@ -1,0 +1,96 @@
+name: Publish to NPM
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to publish (e.g., alpha, beta, latest)'
+        required: false
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - alpha
+          - beta
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+        registry-url: 'https://registry.npmjs.org'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run tests
+      run: npm run test
+
+    - name: Run linter
+      run: npm run lint
+
+    - name: Run type checking
+      run: npm run typecheck
+
+    - name: Build package
+      run: npm run build
+
+    - name: Publish to NPM (Release)
+      if: github.event_name == 'release'
+      run: npm publish
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Publish to NPM (Manual)
+      if: github.event_name == 'workflow_dispatch'
+      run: npm publish --tag ${{ github.event.inputs.tag }}
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    - name: Create GitHub Release Assets
+      if: github.event_name == 'release'
+      run: |
+        npm pack
+        gh release upload ${{ github.event.release.tag_name }} *.tgz
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  verify-publish:
+    needs: publish
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Wait for package to be available
+      run: sleep 30
+
+    - name: Verify NPM package
+      run: |
+        npm view @packfs/core --json > package-info.json
+        cat package-info.json
+        
+        # Verify the package was published with correct version
+        PUBLISHED_VERSION=$(cat package-info.json | jq -r '.version')
+        echo "Published version: $PUBLISHED_VERSION"
+        
+        # Test installation
+        mkdir test-install
+        cd test-install
+        npm init -y
+        npm install @packfs/core@$PUBLISHED_VERSION
+        
+        # Basic smoke test
+        node -e "
+          const { MemorySemanticBackend } = require('@packfs/core');
+          console.log('Package installed and importable successfully');
+          const fs = new MemorySemanticBackend();
+          console.log('Semantic backend instantiated successfully');
+        "

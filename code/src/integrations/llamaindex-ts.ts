@@ -108,17 +108,7 @@ export class LlamaIndexSemanticFilesystemTool implements FrameworkToolAdapter<Ll
           },
           options: {
             type: 'object',
-            description: 'Additional options for the operation',
-            properties: {
-              maxResults: { type: 'number', description: 'Maximum number of search results' },
-              includeContent: { type: 'boolean', description: 'Include file content in results' },
-              recursive: { type: 'boolean', description: 'Search recursively in subdirectories' },
-              fileTypes: { 
-                type: 'array', 
-                items: { type: 'string' },
-                description: 'File extensions to filter by (e.g., ["js", "ts", "md"])' 
-              }
-            }
+            description: 'Additional options for the operation'
           }
         },
         required: ['action']
@@ -329,8 +319,12 @@ export class LlamaIndexSemanticFilesystemTool implements FrameworkToolAdapter<Ll
       }
     }
 
-    // Handle workflow intents
-    return await config.filesystem.executeWorkflow(intent);
+    // Handle workflow intents - only if it has workflow structure
+    if ('steps' in intent) {
+      return await config.filesystem.executeWorkflow(intent);
+    }
+    
+    throw new Error('Unrecognized intent type');
   }
 
   private async executeStructuredAction(config: LlamaIndexIntegrationConfig, input: any): Promise<any> {

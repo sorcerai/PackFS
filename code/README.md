@@ -21,7 +21,7 @@ Inspired by the research in ["LLM-based Semantic File System for Large Codebases
 ## Installation
 
 ```bash
-npm install @packfs/core
+npm install packfs-core
 ```
 
 ## Quick Start
@@ -29,7 +29,7 @@ npm install @packfs/core
 ### Semantic Operations
 
 ```typescript
-import { MemorySemanticBackend } from '@packfs/core';
+import { MemorySemanticBackend } from 'packfs-core';
 
 // Initialize semantic filesystem
 const fs = new MemorySemanticBackend();
@@ -59,7 +59,7 @@ console.log(`Found ${docs.files.length} documentation files`);
 ### Traditional Interface (Backward Compatible)
 
 ```typescript
-import { DiskBackend, SecurityEngine } from '@packfs/core';
+import { DiskBackend, SecurityEngine } from 'packfs-core';
 
 // Traditional POSIX-style operations still supported
 const security = new SecurityEngine({
@@ -77,7 +77,7 @@ const content = await backend.read('/safe/file.txt');
 #### Mastra (TypeScript-First AI Framework)
 
 ```typescript
-import { createMastraSemanticFilesystemTool, MemorySemanticBackend } from '@packfs/core';
+import { createMastraSemanticFilesystemTool, MemorySemanticBackend } from 'packfs-core';
 
 const filesystem = new MemorySemanticBackend();
 const tool = createMastraSemanticFilesystemTool({
@@ -98,7 +98,7 @@ const result = await tool.execute({
 #### LangChain.js
 
 ```typescript
-import { createLangChainSemanticFilesystemTool } from '@packfs/core';
+import { createLangChainSemanticFilesystemTool } from 'packfs-core';
 
 const tool = createLangChainSemanticFilesystemTool({
   filesystem: new MemorySemanticBackend(),
@@ -114,7 +114,7 @@ console.log(response); // File content as string
 #### LlamaIndex.TS
 
 ```typescript
-import { createLlamaIndexSemanticFilesystemTool } from '@packfs/core';
+import { createLlamaIndexSemanticFilesystemTool } from 'packfs-core';
 
 const tool = createLlamaIndexSemanticFilesystemTool({
   filesystem: new MemorySemanticBackend(),
@@ -131,7 +131,7 @@ const result = await tool.call({
 #### KaibanJS (Multi-Agent Systems)
 
 ```typescript
-import { createKaibanSemanticFilesystemTool } from '@packfs/core';
+import { createKaibanSemanticFilesystemTool } from 'packfs-core';
 
 const tool = createKaibanSemanticFilesystemTool({
   filesystem: new MemorySemanticBackend(),
@@ -157,7 +157,7 @@ const result = await tool.handler({
 ### Semantic File Discovery
 
 ```typescript
-import { DiskSemanticBackend } from '@packfs/core';
+import { DiskSemanticBackend } from 'packfs-core';
 
 // Persistent semantic indexing
 const fs = new DiskSemanticBackend({ 

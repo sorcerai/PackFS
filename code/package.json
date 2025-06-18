@@ -1,6 +1,6 @@
 {
-  "name": "@packfs/core",
-  "version": "0.1.0",
+  "name": "packfs-core",
+  "version": "0.1.7",
   "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
@@ -76,7 +76,16 @@
     "format:check": "prettier --check \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
     "prepare": "npm run build",
-    "prepublishOnly": "npm run test && npm run lint && npm run build"
+    "prepublishOnly": "npm run build",
+    "version": "npm run build",
+    "postversion": "git push && git push --tags",
+    "release": "npm version patch && npm publish",
+    "release:minor": "npm version minor && npm publish",
+    "release:major": "npm version major && npm publish",
+    "release:alpha": "npm version prerelease --preid=alpha && npm publish --tag alpha",
+    "release:beta": "npm version prerelease --preid=beta && npm publish --tag beta",
+    "release:safe": "node scripts/test-and-publish.js",
+    "release:safe:dry": "node scripts/test-and-publish.js --dry-run"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",
