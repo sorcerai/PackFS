@@ -1,7 +1,7 @@
 # ADR-003: Semantic Interface Redesign Based on LSFS Research
 
 ## Status
-Proposed
+Accepted - Implementation Started 2024-01-18
 
 ## Context
 

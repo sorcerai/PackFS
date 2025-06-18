@@ -42,11 +42,12 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 ### ADRs by Status
 
 #### Proposed
-- [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
+- *None currently*
 
 #### Accepted
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
 - [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md)
+- [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
 
 #### Deprecated
 - *None yet*
