@@ -6,8 +6,9 @@
 // Core semantic interface
 export { SemanticFileSystemInterface, SemanticIntentValidator } from './interface';
 
-// Concrete implementation
+// Concrete implementations
 export { MemorySemanticBackend } from './memory-semantic-backend';
+export { DiskSemanticBackend } from './disk-semantic-backend';
 
 // Backward compatibility
 export { SemanticCompatibilityAdapter, createSemanticFileSystem, createEnhancedFileSystem } from './compatibility-adapter';

@@ -6,6 +6,7 @@ export * from './core/index';
 export * from './backends/index';
 export * from './processors/index';
 export * from './semantic/index';
+export * from './integrations/index';
 
 // Re-export types for convenience
 export type {
