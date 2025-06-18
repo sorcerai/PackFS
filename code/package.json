@@ -1,26 +1,30 @@
 {
   "name": "@packfs/core",
   "version": "0.1.0",
-  "description": "Secure filesystem access for LLM agent frameworks",
+  "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
     "agent",
     "filesystem",
     "ai",
+    "semantic",
+    "natural-language",
+    "typescript",
+    "mastra",
     "langchain",
-    "autogpt",
-    "crewai"
+    "llamaindex",
+    "kaiban"
   ],
-  "homepage": "https://github.com/yourusername/packfs",
+  "homepage": "https://github.com/jwynia/PackFS",
   "bugs": {
-    "url": "https://github.com/yourusername/packfs/issues"
+    "url": "https://github.com/jwynia/PackFS/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/packfs.git"
+    "url": "git+https://github.com/jwynia/PackFS.git"
   },
   "license": "MIT",
-  "author": "Your Name",
+  "author": "J Wynia",
   "type": "module",
   "exports": {
     ".": {
@@ -28,20 +32,25 @@
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
     },
+    "./mastra": {
+      "types": "./dist/types/integrations/mastra.d.ts",
+      "import": "./dist/esm/integrations/mastra.js",
+      "require": "./dist/cjs/integrations/mastra.js"
+    },
     "./langchain": {
-      "types": "./dist/types/integrations/langchain/index.d.ts",
-      "import": "./dist/esm/integrations/langchain/index.js",
-      "require": "./dist/cjs/integrations/langchain/index.js"
+      "types": "./dist/types/integrations/langchain-js.d.ts",
+      "import": "./dist/esm/integrations/langchain-js.js",
+      "require": "./dist/cjs/integrations/langchain-js.js"
     },
-    "./autogpt": {
-      "types": "./dist/types/integrations/autogpt/index.d.ts",
-      "import": "./dist/esm/integrations/autogpt/index.js",
-      "require": "./dist/cjs/integrations/autogpt/index.js"
+    "./llamaindex": {
+      "types": "./dist/types/integrations/llamaindex-ts.d.ts",
+      "import": "./dist/esm/integrations/llamaindex-ts.js",
+      "require": "./dist/cjs/integrations/llamaindex-ts.js"
     },
-    "./crewai": {
-      "types": "./dist/types/integrations/crewai/index.d.ts",
-      "import": "./dist/esm/integrations/crewai/index.js",
-      "require": "./dist/cjs/integrations/crewai/index.js"
+    "./kaiban": {
+      "types": "./dist/types/integrations/kaiban-js.d.ts",
+      "import": "./dist/esm/integrations/kaiban-js.js",
+      "require": "./dist/cjs/integrations/kaiban-js.js"
     }
   },
   "main": "./dist/cjs/index.js",

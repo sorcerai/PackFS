@@ -1,18 +1,22 @@
 # PackFS
 
-Secure filesystem access for LLM agent frameworks.
+Semantic filesystem operations for LLM agent frameworks with natural language understanding.
 
 ## Overview
 
-PackFS provides robust, secure filesystem operations designed specifically for LLM agent frameworks. It offers safety-first design with sandboxing, permission systems, and intelligent content processing for large files.
+PackFS is a TypeScript/Node.js library that provides intelligent filesystem operations through semantic understanding and natural language processing. Built specifically for LLM agent frameworks, it replaces traditional POSIX-style operations with intent-based semantic operations that understand what agents want to accomplish.
+
+Inspired by the research in ["LLM-based Semantic File System for Large Codebases"](https://arxiv.org/html/2410.11843v5) and the [Python LSFS implementation](https://github.com/chenyushuo/LSFS), PackFS brings semantic filesystem capabilities to the TypeScript/Node.js ecosystem with a focus on agent framework integration.
 
 ## Features
 
-- 🔒 **Security First**: Path validation, sandboxing, and permission controls
-- 📦 **Framework Integrations**: Pre-built adapters for LangChain, AutoGPT, CrewAI, and Semantic Kernel  
-- 🧠 **Intelligent Processing**: Semantic chunking and content processing for large files
-- 🔧 **Dual Module Support**: Both ESM and CommonJS exports
-- 💾 **Multiple Backends**: Memory, disk, and extensible storage backends
+- 🧠 **Semantic Operations**: Natural language file operations - "create a config file", "find all documentation", "organize by topic"
+- 🤖 **LLM Agent Integration**: Native support for Mastra, LangChain.js, LlamaIndex.TS, and KaibanJS frameworks
+- 📝 **Intent-Based Interface**: Replace traditional read/write with semantic operations like `accessFile`, `updateContent`, `discoverFiles`
+- 🔍 **Intelligent Indexing**: Automatic keyword extraction and semantic file indexing for fast discovery
+- 🔄 **Backward Compatibility**: Adapter pattern allows gradual migration from traditional filesystem operations
+- 💾 **Multiple Backends**: Memory and persistent disk backends with semantic indexing
+- 🔒 **Security Controls**: Path validation, sandboxing, and permission systems
 
 ## Installation
 
@@ -22,112 +26,196 @@ npm install @packfs/core
 
 ## Quick Start
 
-### Basic Usage
+### Semantic Operations
 
 ```typescript
-import { SecurityEngine, MemoryBackend } from '@packfs/core';
+import { MemorySemanticBackend } from '@packfs/core';
 
-// Configure security
-const security = new SecurityEngine({
-  maxFileSize: 1024 * 1024, // 1MB
-  allowedExtensions: ['txt', 'md', 'json'],
-  blockedPaths: ['/etc', '/root'],
-  validatePaths: true
+// Initialize semantic filesystem
+const fs = new MemorySemanticBackend();
+
+// Natural language file operations
+const result = await fs.interpretNaturalLanguage({
+  query: "create a config file with database settings",
+  context: { workingDirectory: "/app" }
 });
 
-// Use memory backend for testing
-const backend = new MemoryBackend();
-await backend.initialize();
+// Intent-based operations
+const configResult = await fs.updateContent({
+  purpose: 'create',
+  target: { path: '/app/config.json' },
+  content: JSON.stringify({ database: { host: 'localhost', port: 5432 } })
+});
 
-// Write and read files
-await backend.write('/test/file.txt', Buffer.from('Hello, PackFS!'));
-const content = await backend.read('/test/file.txt');
-console.log(content.toString()); // "Hello, PackFS!"
+// Semantic file discovery
+const docs = await fs.discoverFiles({
+  purpose: 'search_semantic',
+  target: { semanticQuery: 'documentation and readme files' }
+});
+
+console.log(`Found ${docs.files.length} documentation files`);
+```
+
+### Traditional Interface (Backward Compatible)
+
+```typescript
+import { DiskBackend, SecurityEngine } from '@packfs/core';
+
+// Traditional POSIX-style operations still supported
+const security = new SecurityEngine({
+  maxFileSize: 1024 * 1024,
+  allowedExtensions: ['txt', 'md', 'json'],
+  allowedPaths: ['/safe/**']
+});
+
+const backend = new DiskBackend({ security });
+const content = await backend.read('/safe/file.txt');
 ```
 
 ### Framework Integrations
 
-#### LangChain
+#### Mastra (TypeScript-First AI Framework)
 
 ```typescript
-import { PackFSLangChainTool } from '@packfs/core/langchain';
+import { createMastraSemanticFilesystemTool, MemorySemanticBackend } from '@packfs/core';
 
-const tool = new PackFSLangChainTool({
-  sandbox: '/safe/directory',
-  maxFileSize: 1024 * 1024
+const filesystem = new MemorySemanticBackend();
+const tool = createMastraSemanticFilesystemTool({
+  filesystem,
+  workingDirectory: '/project',
+  mastra: {
+    enableTracing: true,
+    agentContext: { role: 'developer' }
+  }
 });
 
-const toolDef = tool.getToolDefinition();
-// Use with LangChain agents
+// Use with Mastra agents
+const result = await tool.execute({
+  naturalLanguageQuery: "create a README with project information"
+});
 ```
 
-#### AutoGPT
+#### LangChain.js
 
 ```typescript
-import { PackFSAutoGPTPlugin } from '@packfs/core/autogpt';
+import { createLangChainSemanticFilesystemTool } from '@packfs/core';
 
-const plugin = new PackFSAutoGPTPlugin({
-  sandbox: '/safe/directory'
+const tool = createLangChainSemanticFilesystemTool({
+  filesystem: new MemorySemanticBackend(),
+  workingDirectory: '/project',
+  langchain: { verbose: true }
 });
 
-const manifest = plugin.getManifest();
-// Register with AutoGPT
+// LangChain DynamicTool compatible
+const response = await tool.func("read the configuration file");
+console.log(response); // File content as string
 ```
 
-#### CrewAI
+#### LlamaIndex.TS
 
 ```typescript
-import { PackFSCrewAITool } from '@packfs/core/crewai';
+import { createLlamaIndexSemanticFilesystemTool } from '@packfs/core';
 
-const tool = new PackFSCrewAITool({
-  sandbox: '/safe/directory'
+const tool = createLlamaIndexSemanticFilesystemTool({
+  filesystem: new MemorySemanticBackend(),
+  workingDirectory: '/project'
 });
 
-const toolDef = tool.getToolDefinition();
-// Use with CrewAI agents
+// LlamaIndex FunctionTool compatible
+const result = await tool.call({
+  action: 'search',
+  searchTerm: 'API documentation'
+});
 ```
 
-### Content Processing
+#### KaibanJS (Multi-Agent Systems)
 
 ```typescript
-import { SemanticChunker, TextProcessor } from '@packfs/core';
+import { createKaibanSemanticFilesystemTool } from '@packfs/core';
 
-// Process large files with semantic chunking
-const chunker = new SemanticChunker({
-  maxChunkSize: 4000,
-  overlapSize: 200
+const tool = createKaibanSemanticFilesystemTool({
+  filesystem: new MemorySemanticBackend(),
+  workingDirectory: '/shared',
+  kaiban: {
+    agentId: 'file-manager',
+    enableStatePersistence: true
+  }
 });
 
-const largeText = "..."; // Large document content
-const result = chunker.chunk(largeText);
+// Multi-agent collaboration
+const result = await tool.handler({
+  action: 'write',
+  path: '/shared/team-notes.md',
+  content: 'Team meeting notes',
+  collaboration: {
+    shareWith: ['agent-001', 'agent-002'],
+    notifyAgents: true
+  }
+});
+```
 
-console.log(`Split into ${result.metadata.chunkCount} chunks`);
-console.log(`Average chunk size: ${result.metadata.avgChunkSize} characters`);
+### Semantic File Discovery
+
+```typescript
+import { DiskSemanticBackend } from '@packfs/core';
+
+// Persistent semantic indexing
+const fs = new DiskSemanticBackend({ 
+  rootPath: '/project',
+  indexPath: '.packfs/semantic-index.json'
+});
+
+// Find files by semantic meaning
+const configFiles = await fs.discoverFiles({
+  purpose: 'search_semantic',
+  target: { semanticQuery: 'configuration and settings' }
+});
+
+// Find files by content patterns
+const apiDocs = await fs.discoverFiles({
+  purpose: 'search_content',
+  target: { pattern: 'API|endpoint|route' }
+});
+
+// Organize files by topic
+const organized = await fs.organizeFiles({
+  purpose: 'group_semantic',
+  source: { path: '/project/docs' },
+  destination: { path: '/project/organized' },
+  options: { groupBy: 'topic' }
+});
 ```
 
 ## API Reference
 
-### Core Classes
+### Semantic Interface
 
-- `FileSystemInterface` - Abstract base class for filesystem implementations
+- `SemanticFileSystemInterface` - Abstract base for semantic operations
+- `MemorySemanticBackend` - In-memory semantic filesystem
+- `DiskSemanticBackend` - Persistent semantic filesystem with indexing
+
+### Semantic Operations
+
+- `accessFile(intent)` - Read, preview, or verify file existence
+- `updateContent(intent)` - Create, append, overwrite, or patch files
+- `discoverFiles(intent)` - List, find, or search files semantically
+- `organizeFiles(intent)` - Move, copy, or group files by semantic criteria
+- `removeFiles(intent)` - Delete files or directories
+- `interpretNaturalLanguage(query)` - Convert natural language to intents
+
+### Traditional Interface (Backward Compatible)
+
+- `FileSystemInterface` - Abstract base class for traditional operations
+- `MemoryBackend` - In-memory storage
+- `DiskBackend` - Local filesystem storage
 - `SecurityEngine` - Security validation and access control
-- `PathValidator` - Path normalization and validation utilities
-
-### Backends
-
-- `MemoryBackend` - In-memory storage for testing and caching
-- `DiskBackend` - Local filesystem storage with safety controls
-
-### Processors
-
-- `TextProcessor` - Basic text file processing
-- `SemanticChunker` - Intelligent text chunking for large files
 
 ### Framework Integrations
 
-- `PackFSLangChainTool` - LangChain tool adapter
-- `PackFSAutoGPTPlugin` - AutoGPT plugin implementation  
-- `PackFSCrewAITool` - CrewAI tool adapter
+- `createMastraSemanticFilesystemTool` - Mastra framework integration
+- `createLangChainSemanticFilesystemTool` - LangChain.js integration
+- `createLlamaIndexSemanticFilesystemTool` - LlamaIndex.TS integration
+- `createKaibanSemanticFilesystemTool` - KaibanJS multi-agent integration
 
 ## Development
 
@@ -148,15 +236,25 @@ npm run lint
 npm run format
 ```
 
+## Semantic Design Philosophy
+
+PackFS is built around semantic understanding rather than traditional filesystem operations:
+
+- **Intent-Based Operations**: Instead of `fs.readFile()`, use semantic operations like `accessFile({ purpose: 'read' })`
+- **Natural Language Support**: Agents can use plain English - "create a config file" instead of complex API calls
+- **Contextual Understanding**: Operations understand the semantic meaning of file content and organization
+- **Framework Native**: Built specifically for LLM agent frameworks with their patterns and needs
+
+Inspired by the [LSFS research paper](https://arxiv.org/html/2410.11843v5), PackFS implements the concept of semantic filesystem operations that better match how LLM agents think about and work with files.
+
 ## Security Considerations
 
-PackFS is designed with security as a primary concern:
+While semantic operations are the primary focus, PackFS maintains strong security:
 
-- All file paths are validated and normalized
-- Sandbox restrictions prevent access outside designated directories
-- File size limits prevent memory exhaustion
-- Extension allowlists control what file types can be accessed
-- Path traversal attacks are prevented
+- Path validation and normalization prevent traversal attacks
+- Configurable sandbox restrictions
+- File size limits and extension controls
+- Permission-based access control
 
 ## License
 
