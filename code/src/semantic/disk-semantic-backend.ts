@@ -890,19 +890,22 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       return await this.fileExists(this.getFullPath(relativePath)) ? [relativePath] : [];
     }
 
+    let results: string[] = [];
+    
+    if (target.pattern) {
+      results = results.concat(this.findByPattern(target.pattern));
+    }
+    
     if (target.semanticQuery) {
-      return this.findBySemanticQuery(target.semanticQuery);
+      results = results.concat(this.findBySemanticQuery(target.semanticQuery));
     }
 
     if (target.criteria) {
-      return this.findByCriteria(target.criteria);
+      results = results.concat(this.findByCriteria(target.criteria));
     }
 
-    if (target.pattern) {
-      return this.findByPattern(target.pattern);
-    }
-
-    return [];
+    // Remove duplicates and return
+    return [...new Set(results)];
   }
 
   private findBySemanticQuery(query: string): string[] {
@@ -921,11 +924,28 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
         }
       }
 
-      // Score based on filename matches
+      // Score based on filename matches (higher weight)
       const filename = basename(path).toLowerCase();
       for (const queryWord of queryWords) {
         if (filename.includes(queryWord)) {
-          score += 1;
+          score += 3;
+        }
+      }
+      
+      // Handle common file types with special scoring
+      if (query.toLowerCase().includes('readme') && filename.includes('readme')) {
+        score += 10;
+      }
+      if (query.toLowerCase().includes('config') && filename.includes('config')) {
+        score += 10;
+      }
+      
+      // Score based on content matches (if available)
+      if (entry.preview) {
+        for (const queryWord of queryWords) {
+          if (entry.preview.toLowerCase().includes(queryWord)) {
+            score += 1;
+          }
         }
       }
 
@@ -995,15 +1015,32 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   }
 
   private findByPattern(pattern: string): string[] {
-    // Simple glob pattern matching
-    const regex = new RegExp(
-      pattern
+    try {
+      // Handle common patterns
+      if (pattern === '*' || pattern === '**' || pattern === '*.*') {
+        return Object.keys(this.index.entries);
+      }
+      
+      // Simple glob pattern matching with safety checks
+      let regexPattern = pattern
         .replace(/\./g, '\\.')
         .replace(/\*/g, '.*')
-        .replace(/\?/g, '.')
-    );
-    
-    return Object.keys(this.index.entries).filter(path => regex.test(path));
+        .replace(/\?/g, '.');
+      
+      // Ensure pattern is valid
+      if (regexPattern === '.*') {
+        return Object.keys(this.index.entries);
+      }
+      
+      const regex = new RegExp(regexPattern, 'i');
+      return Object.keys(this.index.entries).filter(path => regex.test(path));
+    } catch (error) {
+      console.warn(`Invalid pattern '${pattern}':`, error);
+      // Fallback to simple contains match
+      return Object.keys(this.index.entries).filter(path => 
+        path.toLowerCase().includes(pattern.toLowerCase().replace(/\*/g, ''))
+      );
+    }
   }
 
   // Additional implementation methods continue...

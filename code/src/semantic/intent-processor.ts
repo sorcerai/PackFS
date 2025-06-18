@@ -258,11 +258,25 @@ export class NaturalLanguageProcessor {
 
     // File writing patterns (check first since create+content is more specific than just content)
     if (lowerQuery.includes('write') || lowerQuery.includes('create') || lowerQuery.includes('save')) {
+      const target = this.extractFileTarget(query);
+      let content = this.extractContent(query);
+      
+      // If no explicit content but we're creating something, use a default
+      if (!content && lowerQuery.includes('create')) {
+        content = `Created via natural language: ${query}`;
+      }
+      
+      // If no specific path but creating a file, generate a reasonable name
+      if (!target.path && target.semanticQuery && lowerQuery.includes('file')) {
+        const purpose = query.match(/for\s+(\w+[\s\w]*)/)?.[1] || 'general';
+        target.path = `${purpose.replace(/\s+/g, '-').toLowerCase()}.txt`;
+      }
+      
       return {
         intent: {
           purpose: 'create',
-          target: this.extractFileTarget(query),
-          content: this.extractContent(query)
+          target,
+          content
         } as ContentUpdateIntent,
         confidence: 0.7
       };
@@ -316,6 +330,20 @@ export class NaturalLanguageProcessor {
     const calledMatch = query.match(/file\s+(?:called|named)\s+([^\s]+)/i);
     if (calledMatch) {
       return { path: calledMatch[1] };
+    }
+
+    // Look for common file types by name (README, config, etc.)
+    const commonFiles = {
+      'readme': ['readme.md', 'README.md', 'readme.txt', 'README.txt'],
+      'config': ['config.json', 'config.js', 'config.yaml', 'config.yml'],
+      'package': ['package.json'],
+      'license': ['LICENSE', 'LICENSE.txt', 'LICENSE.md']
+    };
+    
+    for (const [keyword, filenames] of Object.entries(commonFiles)) {
+      if (query.toLowerCase().includes(keyword)) {
+        return { pattern: `*${keyword}*`, semanticQuery: filenames.join(' OR ') };
+      }
     }
 
     // Look for file extensions

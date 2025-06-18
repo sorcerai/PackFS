@@ -289,12 +289,20 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
         });
 
       case 'search':
+        const target: any = {};
+        if (params.pattern && params.pattern !== '*') {
+          target.pattern = params.pattern;
+        }
+        if (params.query) {
+          target.semanticQuery = params.query;
+        }
+        if (!target.pattern && !target.semanticQuery) {
+          target.semanticQuery = 'all files';
+        }
+        
         return await config.filesystem.discoverFiles({
           purpose: 'search_semantic',
-          target: { 
-            semanticQuery: params.pattern || params.query,
-            pattern: params.pattern 
-          },
+          target,
           options: params.options
         });
 
@@ -370,7 +378,10 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
     }
 
     if (data.exists !== undefined) {
-      // Existence check
+      // Existence check - but if this was a read operation and file doesn't exist, treat as error
+      if (!data.exists && data.content === undefined) {
+        return 'Error: File not found';
+      }
       return data.exists ? 'File exists' : 'File does not exist';
     }
 

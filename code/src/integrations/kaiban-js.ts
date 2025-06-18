@@ -233,12 +233,18 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         result = await this.handleCollaboration(config, params.collaboration, result, context);
       }
 
+      // Check if the semantic operation was successful
+      const success = result.success !== false;
+      
       return {
-        success: true,
+        success,
         data: result,
+        error: success ? undefined : result.message || 'Operation failed',
         metadata: {
           executionTime: Date.now() - startTime,
-          operationType: params.action || 'natural_query'
+          operationType: params.action || 'natural_query',
+          agentId: context?.agentId || config.kaiban?.agentId,
+          taskId: context?.taskId || params.collaboration?.taskId
         }
       };
 

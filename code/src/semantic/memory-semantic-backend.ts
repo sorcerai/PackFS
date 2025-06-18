@@ -470,7 +470,7 @@ export class MemorySemanticBackend extends SemanticFileSystemInterface {
 
     // Create the updated file
     const contentStr = newContent.toString('utf8');
-    const keywords = this.extractKeywords(contentStr);
+    const keywords = this.extractKeywords(contentStr, filePath);
     const preview = contentStr.substring(0, 200);
 
     const updatedFile: SemanticMemoryFile = {
@@ -523,13 +523,29 @@ export class MemorySemanticBackend extends SemanticFileSystemInterface {
     for (const [path, file] of this.files) {
       let score = 0;
       
-      // Score based on keyword matches
+      // Score based on keyword matches (higher weight)
       for (const keyword of file.keywords) {
         for (const queryWord of queryWords) {
           if (keyword.toLowerCase().includes(queryWord)) {
-            score += 1;
+            score += 3;
           }
         }
+      }
+      
+      // Score based on filename matches (highest weight)
+      const filename = path.toLowerCase();
+      for (const queryWord of queryWords) {
+        if (filename.includes(queryWord)) {
+          score += 5;
+        }
+      }
+      
+      // Special scoring for common patterns
+      if (query.includes('config') && filename.includes('config')) {
+        score += 10;
+      }
+      if (query.includes('readme') && filename.includes('readme')) {
+        score += 10;
       }
 
       // Score based on content matches
@@ -810,16 +826,36 @@ export class MemorySemanticBackend extends SemanticFileSystemInterface {
     };
   }
 
-  private extractKeywords(content: string): string[] {
-    // Simplified keyword extraction - real implementation would be more sophisticated
-    const words = content.toLowerCase()
+  private extractKeywords(content: string, filename?: string): string[] {
+    // Extract keywords from content
+    const contentWords = content.toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 3)
+      .filter(word => word.length > 2)
       .filter(word => !['the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by'].includes(word));
     
-    // Return unique words, limit to top 10
-    return [...new Set(words)].slice(0, 10);
+    // Extract keywords from filename if provided
+    const filenameWords: string[] = [];
+    if (filename) {
+      const basename = filename.split('/').pop() || '';
+      const nameWithoutExt = basename.replace(/\.[^.]*$/, '');
+      filenameWords.push(
+        ...nameWithoutExt.toLowerCase()
+          .replace(/[-_.]/g, ' ')
+          .split(/\s+/)
+          .filter(word => word.length > 2)
+      );
+      
+      // Add file extension as keyword
+      const ext = basename.match(/\.([^.]+)$/)?.[1];
+      if (ext) {
+        filenameWords.push(ext);
+      }
+    }
+    
+    // Combine and deduplicate
+    const allWords = [...contentWords, ...filenameWords];
+    return [...new Set(allWords)].slice(0, 15);
   }
 
   private updateSemanticIndex(filePath: string, keywords: string[]): void {

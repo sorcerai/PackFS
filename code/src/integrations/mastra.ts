@@ -77,9 +77,13 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
             filesAccessed.push(params.target.path);
           }
 
+          // Check if the semantic operation was successful
+          const success = result.success !== false;
+          
           return {
-            success: true,
+            success,
             data: result,
+            error: success ? undefined : result.message || 'Operation failed',
             metadata: {
               executionTime: Date.now() - startTime,
               filesAccessed,

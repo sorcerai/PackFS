@@ -41,6 +41,9 @@ export interface ToolResult {
     executionTime?: number;
     filesAccessed?: string[];
     operationType?: string;
+    agentId?: string;
+    taskId?: string;
+    [key: string]: any;
   };
 }
 
