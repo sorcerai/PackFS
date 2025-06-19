@@ -13,6 +13,15 @@ This document indexes all updates related to the actual content, information, an
 
 ## Items in this Category
 
+### Framework Integration Fixes - 2025-06-19
+
+**Status:** Completed
+**Scope:** Implementation fixes and error handling
+
+Fixed critical issues in the LangChain.js and LlamaIndex.TS integrations by adding proper null checks for filesystem initialization. Standardized error handling across all framework integrations.
+
+[View full update](./framework_integration_fixes.md)
+
 ### Mastra Integration Fixes - 2025-06-19
 
 **Status:** Completed
@@ -60,3 +69,4 @@ Customized the generic software project context network template to specifically
 - 2025-05-21: Initial creation of content updates index
 - 2025-06-18: Added TypeScript NPM package research documentation update
 - 2025-06-19: Added Mastra integration fixes update
+- 2025-06-19: Added Framework integration fixes update
