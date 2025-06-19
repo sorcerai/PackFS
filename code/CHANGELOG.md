@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.11] - 2025-01-19
+
+### Fixed
+- **Critical**: ESM module resolution issues causing ERR_MODULE_NOT_FOUND errors at runtime
+- Added `.js` extensions to all relative imports in TypeScript source files for proper ESM compatibility
+- Fixed package.json export paths now correctly resolve in Node.js ESM environments
+- Mastra integration now works correctly with standard import patterns
+
+### Changed
+- Updated Jest configuration with moduleNameMapper to handle .js extensions in test environment
+- Improved build system compatibility for both ESM and CommonJS outputs
+- Enhanced module resolution for all framework integrations
+
+### Verified
+- All 167 tests pass with updated module resolution
+- Package.json exports (`packfs-core/mastra`) now work correctly at runtime
+- Mastra tools return proper interface with standard `{ success, data, error, metadata }` format
+- Both single tool and tool suite patterns verified working
+
 ## [0.1.10] - 2025-01-19
 
 ### Added
@@ -82,7 +101,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File size limits and extension controls
 - Permission-based access control
 
-[Unreleased]: https://github.com/jwynia/PackFS/compare/v0.1.9...HEAD
+[Unreleased]: https://github.com/jwynia/PackFS/compare/v0.1.11...HEAD
+[0.1.11]: https://github.com/jwynia/PackFS/compare/v0.1.10...v0.1.11
+[0.1.10]: https://github.com/jwynia/PackFS/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/jwynia/PackFS/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/jwynia/PackFS/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/jwynia/PackFS/releases/tag/v0.1.7
