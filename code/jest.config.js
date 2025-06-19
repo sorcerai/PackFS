@@ -5,6 +5,9 @@ export default {
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/*.{test,spec}.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/__tests__.pending/', '/__tests__/integration.disabled/'],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1',
+  },
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

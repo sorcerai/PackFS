@@ -3,9 +3,9 @@
  */
 
 import { resolve, normalize, extname, isAbsolute } from 'path';
-import type { SecurityConfig, ValidationResult } from './config';
-import { DEFAULT_SECURITY_CONFIG } from './config';
-import type { AccessIntent, DiscoverIntent, UpdateIntent } from '../intents';
+import type { SecurityConfig, ValidationResult } from './config.js';
+import { DEFAULT_SECURITY_CONFIG } from './config.js';
+import type { AccessIntent, DiscoverIntent, UpdateIntent } from '../intents/index.js';
 
 /**
  * Rate limiting record structure

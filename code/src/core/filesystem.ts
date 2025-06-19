@@ -2,7 +2,7 @@
  * Core filesystem interface for PackFS
  */
 
-import type { FileMetadata, ReadOptions, WriteOptions } from './types';
+import type { FileMetadata, ReadOptions, WriteOptions } from './types.js';
 
 export abstract class FileSystemInterface {
   /**

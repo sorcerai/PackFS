@@ -2,6 +2,6 @@
  * AutoGPT integration for PackFS
  */
 
-export { PackFSAutoGPTPlugin } from './plugin';
+export { PackFSAutoGPTPlugin } from './plugin.js';
 
-export type { AutoGPTPluginConfig } from './types';
+export type { AutoGPTPluginConfig } from './types.js';

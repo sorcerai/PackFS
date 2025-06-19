@@ -11,7 +11,7 @@ import {
   RemovalIntent,
   FileTarget,
   WorkflowStep
-} from './types';
+} from './types.js';
 
 /**
  * Converts traditional filesystem method calls to semantic intents

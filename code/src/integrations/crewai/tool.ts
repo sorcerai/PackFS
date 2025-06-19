@@ -2,7 +2,7 @@
  * CrewAI tool implementation for PackFS
  */
 
-import type { CrewAIToolConfig } from './types';
+import type { CrewAIToolConfig } from './types.js';
 
 export class PackFSCrewAITool {
   private readonly config: CrewAIToolConfig;

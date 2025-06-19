@@ -4,14 +4,14 @@
  */
 
 // Core semantic interface
-export { SemanticFileSystemInterface, SemanticIntentValidator } from './interface';
+export { SemanticFileSystemInterface, SemanticIntentValidator } from './interface.js';
 
 // Concrete implementations
-export { MemorySemanticBackend } from './memory-semantic-backend';
-export { DiskSemanticBackend } from './disk-semantic-backend';
+export { MemorySemanticBackend } from './memory-semantic-backend.js';
+export { DiskSemanticBackend } from './disk-semantic-backend.js';
 
 // Backward compatibility
-export { SemanticCompatibilityAdapter, createSemanticFileSystem, createEnhancedFileSystem } from './compatibility-adapter';
+export { SemanticCompatibilityAdapter, createSemanticFileSystem, createEnhancedFileSystem } from './compatibility-adapter.js';
 
 // Intent processing utilities
 export {
@@ -20,7 +20,7 @@ export {
   FileTargetProcessor,
   NaturalLanguageProcessor,
   WorkflowBuilder
-} from './intent-processor';
+} from './intent-processor.js';
 
 // All types
-export * from './types';
+export * from './types.js';

@@ -2,7 +2,7 @@
  * Security engine for filesystem operations
  */
 
-import type { SecurityConfig } from './types';
+import type { SecurityConfig } from './types.js';
 
 export class SecurityEngine {
   private readonly config: SecurityConfig;

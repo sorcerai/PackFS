@@ -4,10 +4,10 @@
  */
 
 // Core integration types
-export * from './types';
+export * from './types.js';
 
 // Framework-specific integrations
-export * from './mastra';
-export * from './langchain-js';
-export * from './llamaindex-ts';
-export * from './kaiban-js';
+export * from './mastra.js';
+export * from './langchain-js.js';
+export * from './llamaindex-ts.js';
+export * from './kaiban-js.js';

@@ -2,7 +2,7 @@
  * Semantic text chunking for large files
  */
 
-import type { ChunkResult, ProcessorOptions } from './types';
+import type { ChunkResult, ProcessorOptions } from './types.js';
 
 export class SemanticChunker {
   private readonly options: Required<ProcessorOptions>;

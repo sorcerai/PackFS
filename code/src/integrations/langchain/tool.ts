@@ -2,7 +2,7 @@
  * LangChain tool implementation for PackFS
  */
 
-import type { LangChainToolConfig } from './types';
+import type { LangChainToolConfig } from './types.js';
 
 export class PackFSLangChainTool {
   private readonly config: LangChainToolConfig;

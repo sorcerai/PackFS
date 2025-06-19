@@ -8,7 +8,7 @@ import type {
   ToolResult, 
   ToolDescription, 
   FrameworkToolAdapter 
-} from './types';
+} from './types.js';
 
 /**
  * KaibanJS-specific configuration

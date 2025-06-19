@@ -2,7 +2,7 @@
  * Text content processor
  */
 
-import type { ContentProcessor } from './types';
+import type { ContentProcessor } from './types.js';
 
 export class TextProcessor implements ContentProcessor {
   private readonly textExtensions = [

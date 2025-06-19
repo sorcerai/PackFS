@@ -3,10 +3,10 @@
  * Translates traditional POSIX-style calls to semantic operations
  */
 
-import { FileSystemInterface } from '../core/filesystem';
-import { SemanticFileSystemInterface } from './interface';
-import { TraditionalToSemanticConverter } from './intent-processor';
-import type { FileMetadata, ReadOptions, WriteOptions } from '../core/types';
+import { FileSystemInterface } from '../core/filesystem.js';
+import { SemanticFileSystemInterface } from './interface.js';
+import { TraditionalToSemanticConverter } from './intent-processor.js';
+import type { FileMetadata, ReadOptions, WriteOptions } from '../core/types.js';
 
 /**
  * Adapter that makes semantic filesystem work with traditional interface

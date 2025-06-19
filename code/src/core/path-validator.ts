@@ -3,7 +3,7 @@
  */
 
 import { resolve, normalize, relative } from 'path';
-import type { ValidationResult } from './types';
+import type { ValidationResult } from './types.js';
 
 export class PathValidator {
   private readonly sandboxPath?: string;

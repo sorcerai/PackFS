@@ -5,7 +5,7 @@
 
 import { promises as fs } from 'fs';
 import { join, dirname, basename, extname, relative } from 'path';
-import { SemanticFileSystemInterface } from './interface';
+import { SemanticFileSystemInterface } from './interface.js';
 import {
   FileAccessIntent,
   FileAccessResult,
@@ -23,8 +23,8 @@ import {
   NaturalLanguageResult,
   FileMetadata,
   SemanticConfig
-} from './types';
-import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor';
+} from './types.js';
+import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor.js';
 
 interface SemanticIndexEntry {
   path: string;

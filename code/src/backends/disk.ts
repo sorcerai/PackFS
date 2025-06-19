@@ -4,8 +4,8 @@
 
 import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
-import type { FileMetadata } from '../core/types';
-import type { BackendInterface } from './types';
+import type { FileMetadata } from '../core/types.js';
+import type { BackendInterface } from './types.js';
 
 export class DiskBackend implements BackendInterface {
   private readonly basePath: string;

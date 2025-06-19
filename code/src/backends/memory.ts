@@ -2,8 +2,8 @@
  * In-memory storage backend for testing and caching
  */
 
-import type { FileMetadata } from '../core/types';
-import type { BackendInterface } from './types';
+import type { FileMetadata } from '../core/types.js';
+import type { BackendInterface } from './types.js';
 
 interface MemoryFile {
   data: Buffer;

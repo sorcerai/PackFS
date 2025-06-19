@@ -5,12 +5,12 @@
 
 import { isAbsolute } from 'path';
 import { createTool } from '@mastra/core/tools';
-import { DiskBackend } from '../../backends/disk';
-import { MastraSecurityValidator } from './security/validator';
-import { schemas, outputSchemas } from './schemas';
-import type { PackfsToolConfig, PackfsToolSet, ToolContext } from './types';
-import type { AccessIntent, DiscoverIntent, UpdateIntent } from './intents';
-import type { SecurityConfig } from './security/config';
+import { DiskBackend } from '../../backends/disk.js';
+import { MastraSecurityValidator } from './security/validator.js';
+import { schemas, outputSchemas } from './schemas/index.js';
+import type { PackfsToolConfig, PackfsToolSet, ToolContext } from './types.js';
+import type { AccessIntent, DiscoverIntent, UpdateIntent } from './intents/index.js';
+import type { SecurityConfig } from './security/config.js';
 
 // Use Mastra's tool type
 type MastraTool = ReturnType<typeof createTool>;
@@ -428,8 +428,8 @@ async function executeSearchOperation(context: ToolContext, intent: DiscoverInte
 }
 
 // Re-export types and schemas for convenience
-export type { PackfsToolConfig, PackfsToolSet, MastraTool } from './types';
-export type { AccessIntent, DiscoverIntent, UpdateIntent } from './intents';
-export type { SecurityConfig } from './security/config';
-export { MastraSecurityValidator } from './security/validator';
-export { schemas, outputSchemas } from './schemas';
+export type { PackfsToolConfig, PackfsToolSet, MastraTool } from './types.js';
+export type { AccessIntent, DiscoverIntent, UpdateIntent } from './intents/index.js';
+export type { SecurityConfig } from './security/config.js';
+export { MastraSecurityValidator } from './security/validator.js';
+export { schemas, outputSchemas } from './schemas/index.js';

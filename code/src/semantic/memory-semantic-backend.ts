@@ -3,7 +3,7 @@
  * Implements the semantic interface using in-memory storage with vector indexing simulation
  */
 
-import { SemanticFileSystemInterface } from './interface';
+import { SemanticFileSystemInterface } from './interface.js';
 import {
   FileAccessIntent,
   FileAccessResult,
@@ -21,8 +21,8 @@ import {
   NaturalLanguageResult,
   FileMetadata,
   SemanticConfig
-} from './types';
-import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor';
+} from './types.js';
+import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor.js';
 
 interface SemanticMemoryFile {
   data: Buffer;

@@ -2,11 +2,11 @@
  * PackFS - Secure filesystem access for LLM agent frameworks
  */
 
-export * from './core/index';
-export * from './backends/index';
-export * from './processors/index';
-export * from './semantic/index';
-export * from './integrations/index';
+export * from './core/index.js';
+export * from './backends/index.js';
+export * from './processors/index.js';
+export * from './semantic/index.js';
+export * from './integrations/index.js';
 
 // Re-export types for convenience
 export type {
@@ -14,11 +14,11 @@ export type {
   FileSystemOptions,
   FileMetadata,
   SecurityConfig
-} from './core/index';
+} from './core/index.js';
 
 export type {
   ContentProcessor
-} from './processors/index';
+} from './processors/index.js';
 
 // Semantic interface types
 export type {
@@ -38,4 +38,4 @@ export type {
   NaturalLanguageIntent,
   NaturalLanguageResult,
   SemanticConfig
-} from './semantic/index';
+} from './semantic/index.js';

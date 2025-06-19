@@ -2,7 +2,7 @@
  * AutoGPT plugin implementation for PackFS
  */
 
-import type { AutoGPTPluginConfig } from './types';
+import type { AutoGPTPluginConfig } from './types.js';
 
 export class PackFSAutoGPTPlugin {
   private readonly config: AutoGPTPluginConfig;
