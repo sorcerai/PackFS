@@ -1,6 +1,6 @@
 {
   "name": "packfs-core",
-  "version": "0.1.11",
+  "version": "0.1.12",
   "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
@@ -31,6 +31,26 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js"
+    },
+    "./backends": {
+      "types": "./dist/types/backends/index.d.ts",
+      "import": "./dist/esm/backends/index.js",
+      "require": "./dist/cjs/backends/index.js"
+    },
+    "./core": {
+      "types": "./dist/types/core/index.d.ts",
+      "import": "./dist/esm/core/index.js",
+      "require": "./dist/cjs/core/index.js"
+    },
+    "./semantic": {
+      "types": "./dist/types/semantic/index.d.ts",
+      "import": "./dist/esm/semantic/index.js",
+      "require": "./dist/cjs/semantic/index.js"
+    },
+    "./processors": {
+      "types": "./dist/types/processors/index.d.ts",
+      "import": "./dist/esm/processors/index.js",
+      "require": "./dist/cjs/processors/index.js"
     },
     "./mastra": {
       "types": "./dist/types/integrations/mastra.d.ts",

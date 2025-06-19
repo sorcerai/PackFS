@@ -8,12 +8,15 @@ import type { SemanticFileSystemInterface } from '../semantic';
  * Base configuration for all framework integrations
  */
 export interface BaseIntegrationConfig {
-  /** The semantic filesystem backend to use */
-  filesystem: SemanticFileSystemInterface;
-  
-  /** Optional working directory restriction */
+  /**
+   * The semantic filesystem backend to use
+   * If not provided, a default filesystem will be created based on workingDirectory
+   */
+  filesystem?: SemanticFileSystemInterface;
+
+  /** Working directory for filesystem operations */
   workingDirectory?: string;
-  
+
   /** Security configuration */
   security?: {
     allowedPaths?: string[];
@@ -21,7 +24,7 @@ export interface BaseIntegrationConfig {
     maxFileSize?: number;
     allowedExtensions?: string[];
   };
-  
+
   /** Performance configuration */
   performance?: {
     maxResults?: number;
@@ -55,12 +58,15 @@ export interface ToolDescription {
   description: string;
   parameters: {
     type: 'object';
-    properties: Record<string, {
-      type: string;
-      description: string;
-      enum?: string[];
-      required?: boolean;
-    }>;
+    properties: Record<
+      string,
+      {
+        type: string;
+        description: string;
+        enum?: string[];
+        required?: boolean;
+      }
+    >;
     required?: string[];
   };
   examples?: Array<{
@@ -75,10 +81,10 @@ export interface ToolDescription {
 export interface FrameworkToolAdapter<TFrameworkTool = any> {
   /** Convert PackFS semantic operations to framework-specific tool */
   createTool(config: BaseIntegrationConfig): TFrameworkTool;
-  
+
   /** Get tool description for the framework */
   getToolDescription(): ToolDescription;
-  
+
   /** Validate tool parameters before execution */
   validateParameters(params: any): { valid: boolean; errors?: string[] };
 }
