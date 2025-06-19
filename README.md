@@ -1,51 +1,154 @@
-# PackFS - Filesystem Access for LLM Agent Frameworks
+# PackFS
 
-PackFS is an NPM package that provides robust, secure filesystem access specifically designed for LLM agent frameworks. It offers a comprehensive library of interface functions that consuming frameworks can wrap in tools, enabling intelligent file operations while maintaining safety and performance.
+Semantic filesystem operations for LLM agent frameworks with natural language understanding.
 
-This project leverages a context network approach for documentation and knowledge management (more info at https://jwynia.github.io/context-networks/). The context network captures the complex design decisions, architectural patterns, and domain knowledge that underlies PackFS's development, ensuring maintainability and enabling effective collaboration between human developers and AI agents.
+## Overview
 
-## Key Features
+PackFS is a TypeScript/Node.js library that provides intelligent filesystem operations through semantic understanding and natural language processing. Built specifically for LLM agent frameworks, it replaces traditional POSIX-style operations with intent-based semantic operations that understand what agents want to accomplish.
 
-PackFS addresses the critical challenges identified in filesystem tool design for LLM agents:
+Inspired by the research in ["LLM-based Semantic File System for Large Codebases"](https://arxiv.org/html/2410.11843v5) and the [Python LSFS implementation](https://github.com/chenyushuo/LSFS), PackFS brings semantic filesystem capabilities to the TypeScript/Node.js ecosystem with a focus on agent framework integration.
 
-- **Intelligent Content Management**: Semantic chunking, hierarchical summarization, and intelligent preview generation for files exceeding context windows
-- **Robust Abstraction Layers**: Interface-driven design with composable backends enabling seamless switching between memory, disk, and cloud storage
-- **Safety-First Design**: Path validation, permission systems, virtual filesystems, and comprehensive error handling designed specifically for LLM comprehension
+## Features
 
-## Getting Started
+- 🧠 **Semantic Operations**: Natural language file operations - "create a config file", "find all documentation", "organize by topic"
+- 🤖 **Native Mastra Integration**: Tool factory pattern reduces integration boilerplate from 160+ lines to under 20
+- 📝 **Intent-Based Interface**: Replace traditional read/write with semantic operations like `accessFile`, `updateContent`, `discoverFiles`
+- 🔍 **Intelligent Indexing**: Automatic keyword extraction and semantic file indexing for fast discovery
+- 🔄 **Backward Compatibility**: Adapter pattern allows gradual migration from traditional filesystem operations
+- 💾 **Multiple Backends**: Memory and persistent disk backends with semantic indexing
+- 🔒 **Security Controls**: Path validation, sandboxing, and permission systems
 
-### Installation
+## Installation
+
 ```bash
-npm install packfs
+npm install packfs-core
 ```
 
-### Basic Usage
-```typescript
-import { PackFS } from 'packfs';
+## Quick Start
 
-const fs = new PackFS({
-  backend: 'disk',
-  sandbox: './workspace',
-  permissions: ['read', 'write']
+### Native Mastra Integration
+
+PackFS provides native Mastra integration with a tool factory pattern that reduces boilerplate from 160+ lines to under 20:
+
+```typescript
+import { createPackfsTools } from 'packfs-core/integrations/mastra';
+
+// Create tools with minimal configuration
+const tools = createPackfsTools({
+  rootPath: '/project',
+  permissions: ['read', 'write', 'search'],
+  security: {
+    maxFileSize: 5 * 1024 * 1024, // 5MB limit
+    allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
+    blockedPaths: ['node_modules', '.git']
+  }
 });
 
-// Intelligent file operations designed for LLM agents
-const content = await fs.readWithContext('large-file.txt');
-const preview = await fs.generatePreview('document.pdf');
-const metadata = await fs.getEnhancedMetadata('data.json');
+// Use individual tools in your Mastra agent
+const fileContent = await tools.fileReader.execute({
+  context: {
+    purpose: 'read',
+    target: { path: '/project/README.md' }
+  },
+  runtimeContext // Mastra's runtime context
+});
+
+const searchResults = await tools.fileSearcher.execute({
+  context: {
+    purpose: 'search_content',
+    target: { path: '/project' },
+    options: { pattern: 'API.*endpoint' }
+  },
+  runtimeContext
+});
+
+// Create new files with validation
+await tools.fileWriter.execute({
+  context: {
+    purpose: 'create',
+    target: { path: '/project/config.json' },
+    content: JSON.stringify({ database: { host: 'localhost' } })
+  },
+  runtimeContext
+});
 ```
 
-### Framework Integration
-PackFS is designed to be wrapped by LLM agent frameworks:
+**Semantic Operations**: The tools support intent-based operations:
+- **AccessIntent**: `read`, `metadata`, `exists`
+- **DiscoverIntent**: `list`, `search_content`, `search_semantic`  
+- **UpdateIntent**: `create`, `update`, `append`, `delete`
+
+### Semantic Operations
 
 ```typescript
-// Example: LangChain integration
-import { PackFSToolkit } from 'packfs/langchain';
+import { MemorySemanticBackend } from 'packfs-core';
 
-const toolkit = new PackFSToolkit({
-  filesystem: fs,
-  allowedOperations: ['read', 'write', 'list']
+// Initialize semantic filesystem
+const fs = new MemorySemanticBackend();
+
+// Natural language file operations
+const result = await fs.interpretNaturalLanguage({
+  query: "create a config file with database settings",
+  context: { workingDirectory: "/app" }
 });
+
+// Intent-based operations
+const configResult = await fs.updateContent({
+  purpose: 'create',
+  target: { path: '/app/config.json' },
+  content: JSON.stringify({ database: { host: 'localhost', port: 5432 } })
+});
+
+// Semantic file discovery
+const docs = await fs.discoverFiles({
+  purpose: 'search_semantic',
+  target: { semanticQuery: 'documentation and readme files' }
+});
+
+console.log(`Found ${docs.files.length} documentation files`);
+```
+
+### Traditional Interface (Backward Compatible)
+
+```typescript
+import { DiskBackend, SecurityEngine } from 'packfs-core';
+
+// Traditional POSIX-style operations still supported
+const security = new SecurityEngine({
+  maxFileSize: 1024 * 1024,
+  allowedExtensions: ['txt', 'md', 'json'],
+  allowedPaths: ['/safe/**']
+});
+
+const backend = new DiskBackend({ security });
+const content = await backend.read('/safe/file.txt');
+```
+
+## Advanced Configuration
+
+```typescript
+const tools = createPackfsTools({
+  rootPath: '/workspace',
+  permissions: ['read', 'write', 'search', 'list'],
+  security: {
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts', '.py'],
+    blockedPaths: ['node_modules', '.git', '.env', 'secrets'],
+    rateLimiting: {
+      maxRequests: 100,
+      windowMs: 60000 // 1 minute
+    }
+  },
+  semantic: {
+    enableRelationships: true,
+    chunkSize: 2000,
+    overlapSize: 200,
+    relevanceThreshold: 0.5
+  }
+});
+
+// Generated tools: fileReader, fileWriter, fileSearcher, fileLister
+// Each tool includes automatic security validation and error handling
 ```
 
 ## Architecture
@@ -54,46 +157,100 @@ PackFS implements a three-layer architecture optimized for LLM agent interaction
 
 ### Core Layer
 - **FileSystem Interface**: Abstract filesystem operations with pluggable backends
-- **Content Processors**: Semantic chunking, summarization, and preview generation
+- **Content Processors**: Semantic chunking and text processing utilities
 - **Security Engine**: Path validation, sandboxing, and permission management
 
 ### Integration Layer
-- **Framework Adapters**: Pre-built integrations for LangChain, AutoGPT, CrewAI, and Semantic Kernel
-- **Tool Wrappers**: Ready-to-use tool definitions for common agent frameworks
-- **Error Handlers**: LLM-friendly error messages with recovery suggestions
+- **Native Mastra Integration**: Tool factory with intent-based operations
+- **Framework Adapters**: Support for LangChain.js, LlamaIndex.TS, and KaibanJS
+- **Semantic Processing**: Natural language understanding and file organization
 
 ### Backend Layer
-- **Storage Backends**: Memory, disk, cloud storage with unified interface
+- **Storage Backends**: Memory and disk backends with unified interface
+- **Semantic Indexing**: Persistent semantic file indexing and discovery
 - **Virtual Filesystems**: Safe testing and agent isolation environments
-- **Caching System**: Three-tier caching for optimal performance
 
-## Design Principles
+## API Reference
 
-PackFS is built on research-backed principles for LLM filesystem tools:
+### Native Mastra Integration
+- `createPackfsTools(config)` - Native tool factory for Mastra agents
+- `MastraSecurityValidator` - Security validation with path restrictions and rate limiting
+- Intent-based schemas: `AccessIntent`, `DiscoverIntent`, `UpdateIntent`
 
-1. **Semantic Awareness**: Operations understand content meaning, not just file paths
-2. **Context Window Optimization**: Intelligent content management for large files
-3. **Safety First**: Multiple layers of protection against destructive operations
-4. **Framework Agnostic**: Clean interfaces that work with any agent framework
-5. **TypeScript Native**: Full type safety and excellent developer experience
+### Semantic Interface
+- `SemanticFileSystemInterface` - Abstract base for semantic operations
+- `MemorySemanticBackend` - In-memory semantic filesystem
+- `DiskSemanticBackend` - Persistent semantic filesystem with indexing
 
-## Documentation
+### Semantic Operations
+- `accessFile(intent)` - Read, preview, or verify file existence
+- `updateContent(intent)` - Create, append, overwrite, or patch files
+- `discoverFiles(intent)` - List, find, or search files semantically
+- `organizeFiles(intent)` - Move, copy, or group files by semantic criteria
+- `removeFiles(intent)` - Delete files or directories
+- `interpretNaturalLanguage(query)` - Convert natural language to intents
 
-Comprehensive documentation is available in the context network:
+### Traditional Interface (Backward Compatible)
+- `FileSystemInterface` - Abstract base class for traditional operations
+- `MemoryBackend` - In-memory storage
+- `DiskBackend` - Local filesystem storage
+- `SecurityEngine` - Security validation and access control
+
+## Development
+
+```bash
+# Navigate to code directory
+cd code
+
+# Install dependencies
+npm install
+
+# Build the package
+npm run build
+
+# Run tests
+npm test
+
+# Run linting and type checking
+npm run typecheck
+```
+
+## Design Philosophy
+
+PackFS is built around semantic understanding rather than traditional filesystem operations:
+
+- **Intent-Based Operations**: Instead of `fs.readFile()`, use semantic operations like `accessFile({ purpose: 'read' })`
+- **Natural Language Support**: Agents can use plain English - "create a config file" instead of complex API calls
+- **Contextual Understanding**: Operations understand the semantic meaning of file content and organization
+- **Framework Native**: Built specifically for LLM agent frameworks with their patterns and needs
+
+Inspired by the [LSFS research paper](https://arxiv.org/html/2410.11843v5), PackFS implements the concept of semantic filesystem operations that better match how LLM agents think about and work with files.
+
+## Security Considerations
+
+While semantic operations are the primary focus, PackFS maintains strong security:
+
+- Path validation and normalization prevent traversal attacks
+- Configurable sandbox restrictions
+- File size limits and extension controls
+- Permission-based access control
+- Rate limiting for agent protection
+
+## Context Network Documentation
+
+This project leverages a context network approach for documentation and knowledge management. Comprehensive documentation is available in the context network:
+
 - **Architecture Decisions**: See `context-network/decisions/`
 - **Component Documentation**: See `context-network/elements/`
 - **Integration Guides**: See `context-network/processes/`
-- **Research Foundation**: See `inbox/llm-filesystem-tools-report.md`
-
-## Contributing
-
-PackFS development follows a context network approach. Before contributing:
-
-1. Review the context network documentation in `./context-network/`
-2. Understand the design principles and architectural decisions
-3. Follow the documented development processes
-4. Update relevant context network nodes with your changes
+- **Implementation Details**: See `context-network/architecture/`
 
 ## License
 
-MIT License - see LICENSE file for details.
+MIT
+
+## Contributing
+
+Contributions are welcome! Please read our contributing guidelines and submit pull requests to our GitHub repository.
+
+The project follows a context network approach - before contributing, please review the documentation in `./context-network/` to understand the design principles and architectural decisions.
