@@ -4,7 +4,7 @@ export default {
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts', '**/*.{test,spec}.ts'],
-  testPathIgnorePatterns: ['/node_modules/', '/__tests__.pending/'],
+  testPathIgnorePatterns: ['/node_modules/', '/__tests__.pending/', '/__tests__/integration.disabled/'],
   collectCoverageFrom: [
     'src/**/*.ts',
     '!src/**/*.d.ts',

@@ -1,6 +1,6 @@
 {
   "name": "packfs-core",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
@@ -106,5 +106,9 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@mastra/core": "0.10.6",
+    "zod": "3.25.67"
   }
 }

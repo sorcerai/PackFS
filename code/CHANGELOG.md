@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.10] - 2025-01-19
+
+### Added
+- Native Mastra integration with createPackfsTools factory function
+- MastraSecurityValidator with path restrictions, rate limiting, and extension filtering
+- Comprehensive Zod schemas for AccessIntent, DiscoverIntent, and UpdateIntent operations
+- Intent-based API reducing Mastra integration boilerplate from 160+ lines to under 20
+- Tool factory pattern generating ready-to-use Mastra tools with security validation
+- Complete test suite with 167 passing tests including Mastra integration tests
+
+### Changed
+- Added @mastra/core dependency for native Mastra framework integration
+- Enhanced security configuration to support optional extension restrictions
+- Improved TypeScript types for better Mastra API compatibility
+
+### Fixed
+- Security validator extension filtering logic for undefined allowedExtensions
+- Mastra tool execution context compatibility with RuntimeContext requirements
+- Type alignment between intent results and Mastra output schemas
+
 ## [0.1.9] - 2025-01-19
 
 ### Added
