@@ -6,34 +6,34 @@ import { MemorySemanticBackend } from '../semantic/memory-semantic-backend';
 import type { BaseIntegrationConfig } from './types';
 
 // Mastra integration tests
-import { 
-  MastraSemanticFilesystemTool, 
+import {
+  MastraSemanticFilesystemTool,
   createMastraSemanticFilesystemTool,
   createMastraSemanticToolSuite,
-  type MastraIntegrationConfig 
+  type MastraIntegrationConfig,
 } from './mastra';
 
 // LangChain integration tests
-import { 
+import {
   createLangChainSemanticFilesystemTool,
   createLangChainSemanticToolSet,
-  type LangChainIntegrationConfig 
+  type LangChainIntegrationConfig,
 } from './langchain-js';
 
 // LlamaIndex integration tests
-import { 
+import {
   createLlamaIndexSemanticFilesystemTool,
   createLlamaIndexSemanticToolSpec,
   createLlamaIndexSemanticToolSuite,
-  type LlamaIndexIntegrationConfig 
+  type LlamaIndexIntegrationConfig,
 } from './llamaindex-ts';
 
 // KaibanJS integration tests
-import { 
+import {
   createKaibanSemanticFilesystemTool,
   createKaibanFileSystemActions,
   createKaibanMultiAgentFileCoordinator,
-  type KaibanIntegrationConfig 
+  type KaibanIntegrationConfig,
 } from './kaiban-js';
 
 describe('Framework Integrations', () => {
@@ -48,32 +48,32 @@ describe('Framework Integrations', () => {
       security: {
         allowedPaths: ['/test/**'],
         maxFileSize: 1024 * 1024,
-        allowedExtensions: ['txt', 'md', 'json', 'js', 'ts']
+        allowedExtensions: ['txt', 'md', 'json', 'js', 'ts'],
       },
       performance: {
         maxResults: 50,
         timeoutMs: 5000,
-        enableCaching: true
-      }
+        enableCaching: true,
+      },
     };
 
     // Set up test files
     await filesystem.updateContent({
       purpose: 'create',
       target: { path: '/test/readme.md' },
-      content: '# Test Project\nThis is a test project for framework integrations.'
+      content: '# Test Project\nThis is a test project for framework integrations.',
     });
 
     await filesystem.updateContent({
       purpose: 'create',
       target: { path: '/test/config.json' },
-      content: '{"name": "test-project", "version": "1.0.0"}'
+      content: '{"name": "test-project", "version": "1.0.0"}',
     });
 
     await filesystem.updateContent({
       purpose: 'create',
       target: { path: '/test/notes.txt' },
-      content: 'Important notes about the project setup and configuration.'
+      content: 'Important notes about the project setup and configuration.',
     });
   });
 
@@ -88,8 +88,8 @@ describe('Framework Integrations', () => {
           autoRetry: true,
           maxRetries: 3,
           enableTracing: true,
-          agentContext: { agentId: 'test-agent', role: 'developer' }
-        }
+          agentContext: { agentId: 'test-agent', role: 'developer' },
+        },
       };
       tool = createMastraSemanticFilesystemTool(mastraConfig);
     });
@@ -103,7 +103,7 @@ describe('Framework Integrations', () => {
 
     it('should execute natural language queries', async () => {
       const result = await tool.execute({
-        naturalLanguageQuery: 'read the README file'
+        naturalLanguageQuery: 'read the README file',
       });
 
       expect(result.success).toBe(true);
@@ -115,7 +115,7 @@ describe('Framework Integrations', () => {
       const result = await tool.execute({
         operation: 'access',
         purpose: 'read',
-        target: { path: '/test/config.json' }
+        target: { path: '/test/config.json' },
       });
 
       expect(result.success).toBe(true);
@@ -124,7 +124,7 @@ describe('Framework Integrations', () => {
 
     it('should handle file creation with natural language', async () => {
       const result = await tool.execute({
-        naturalLanguageQuery: 'create a file called todo.txt with my daily tasks'
+        naturalLanguageQuery: 'create a file called todo.txt with my daily tasks',
       });
 
       expect(result.success).toBe(true);
@@ -133,17 +133,17 @@ describe('Framework Integrations', () => {
 
     it('should validate parameters correctly', () => {
       const adapter = new MastraSemanticFilesystemTool();
-      
+
       const validParams = { naturalLanguageQuery: 'read file' };
       const invalidParams = {};
-      
+
       expect(adapter.validateParameters(validParams).valid).toBe(true);
       expect(adapter.validateParameters(invalidParams).valid).toBe(false);
     });
 
     it('should create tool suite with specialized tools', () => {
       const suite = createMastraSemanticToolSuite(mastraConfig);
-      
+
       expect(suite.fileReader.name).toBe('read_file');
       expect(suite.fileWriter.name).toBe('write_file');
       expect(suite.fileSearcher.name).toBe('search_files');
@@ -152,13 +152,13 @@ describe('Framework Integrations', () => {
 
     it('should execute file search through tool suite', async () => {
       const suite = createMastraSemanticToolSuite(mastraConfig);
-      
+
       const result = await suite.fileSearcher.execute({
-        query: 'find configuration files'
+        query: 'find configuration files',
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.files.some((f: any) => f.path.includes('config.json'))).toBe(true);
+      expect(result.results.some((f: any) => f.path.includes('config.json'))).toBe(true);
     });
   });
 
@@ -172,8 +172,8 @@ describe('Framework Integrations', () => {
         langchain: {
           verbose: true,
           metadata: { framework: 'langchain-js' },
-          callbacks: []
-        }
+          callbacks: [],
+        },
       };
       tool = createLangChainSemanticFilesystemTool(langchainConfig);
     });
@@ -187,7 +187,7 @@ describe('Framework Integrations', () => {
 
     it('should handle string input (natural language)', async () => {
       const result = await tool.func('read the README file');
-      
+
       expect(typeof result).toBe('string');
       expect(result).toContain('Test Project');
     });
@@ -196,7 +196,7 @@ describe('Framework Integrations', () => {
       const result = await tool.func({
         query: 'read the config file',
         operation: 'read',
-        path: '/test/config.json'
+        path: '/test/config.json',
       });
 
       expect(typeof result).toBe('string');
@@ -208,11 +208,11 @@ describe('Framework Integrations', () => {
         query: 'create a notes file',
         operation: 'write',
         path: '/test/new-notes.txt',
-        content: 'New notes content'
+        content: 'New notes content',
       });
 
       const result = await tool.func(input);
-      
+
       expect(typeof result).toBe('string');
       expect(result).toContain('created');
     });
@@ -221,7 +221,7 @@ describe('Framework Integrations', () => {
       const result = await tool.func({
         query: 'find all files',
         operation: 'search',
-        pattern: '*'
+        pattern: '*',
       });
 
       expect(typeof result).toBe('string');
@@ -231,7 +231,7 @@ describe('Framework Integrations', () => {
 
     it('should create specialized tool set', () => {
       const toolSet = createLangChainSemanticToolSet(langchainConfig);
-      
+
       expect(toolSet.fileReader.name).toBe('read_file');
       expect(toolSet.fileWriter.name).toBe('write_file');
       expect(toolSet.fileSearcher.name).toBe('search_files');
@@ -240,17 +240,17 @@ describe('Framework Integrations', () => {
 
     it('should execute file operations through specialized tools', async () => {
       const toolSet = createLangChainSemanticToolSet(langchainConfig);
-      
+
       const writeResult = await toolSet.fileWriter.func({
         path: '/test/langchain-test.txt',
         content: 'LangChain integration test',
-        mode: 'create'
+        mode: 'create',
       });
 
       expect(writeResult).toContain('created successfully');
 
       const readResult = await toolSet.fileReader.func({
-        path: '/test/langchain-test.txt'
+        path: '/test/langchain-test.txt',
       });
 
       expect(readResult).toContain('LangChain integration test');
@@ -269,9 +269,9 @@ describe('Framework Integrations', () => {
           metadata: { framework: 'llamaindex-ts' },
           functionCalling: {
             autoCall: true,
-            maxDepth: 3
-          }
-        }
+            maxDepth: 3,
+          },
+        },
       };
       tool = createLlamaIndexSemanticFilesystemTool(llamaConfig);
     });
@@ -286,7 +286,7 @@ describe('Framework Integrations', () => {
     it('should execute natural language queries', async () => {
       const result = await tool.call({
         action: 'natural_query',
-        query: 'read the README file'
+        query: 'read the README file',
       });
 
       expect(result.success).toBe(true);
@@ -296,7 +296,7 @@ describe('Framework Integrations', () => {
     it('should execute structured actions', async () => {
       const result = await tool.call({
         action: 'read',
-        path: '/test/config.json'
+        path: '/test/config.json',
       });
 
       expect(result.success).toBe(true);
@@ -309,17 +309,18 @@ describe('Framework Integrations', () => {
         searchTerm: 'configuration',
         options: {
           fileTypes: ['json'],
-          maxResults: 10
-        }
+          maxResults: 10,
+        },
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.files.some((f: any) => f.path.includes('config.json'))).toBe(true);
+      const files = result.results || result.data?.files || result.files || [];
+      expect(files.some((f: any) => f.path.includes('config.json'))).toBe(true);
     });
 
     it('should create ToolSpec format', () => {
       const toolSpec = createLlamaIndexSemanticToolSpec(llamaConfig);
-      
+
       expect(toolSpec.name).toBe('semantic_filesystem');
       expect(toolSpec.description).toContain('Intelligent file system operations');
       expect(toolSpec.parameters).toBeDefined();
@@ -328,7 +329,7 @@ describe('Framework Integrations', () => {
 
     it('should create specialized tool suite', () => {
       const suite = createLlamaIndexSemanticToolSuite(llamaConfig);
-      
+
       expect(suite.fileReader.metadata.name).toBe('read_file');
       expect(suite.fileWriter.metadata.name).toBe('write_file');
       expect(suite.fileSearcher.metadata.name).toBe('search_files');
@@ -337,18 +338,18 @@ describe('Framework Integrations', () => {
 
     it('should execute operations through specialized tools', async () => {
       const suite = createLlamaIndexSemanticToolSuite(llamaConfig);
-      
+
       const writeResult = await suite.fileWriter.call({
         path: '/test/llamaindex-test.txt',
         content: 'LlamaIndex integration test',
-        mode: 'create'
+        mode: 'create',
       });
 
       expect(writeResult.path).toBe('/test/llamaindex-test.txt');
       expect(writeResult.created).toBe(true);
 
       const readResult = await suite.fileReader.call({
-        query: '/test/llamaindex-test.txt'
+        query: '/test/llamaindex-test.txt',
       });
 
       expect(readResult.content).toContain('LlamaIndex integration test');
@@ -356,17 +357,17 @@ describe('Framework Integrations', () => {
 
     it('should handle file management operations', async () => {
       const suite = createLlamaIndexSemanticToolSuite(llamaConfig);
-      
+
       // Create a file first
       await suite.fileWriter.call({
         path: '/test/to-delete.txt',
-        content: 'This will be deleted'
+        content: 'This will be deleted',
       });
 
       // Delete the file
       const deleteResult = await suite.fileManager.call({
         action: 'delete',
-        source: '/test/to-delete.txt'
+        source: '/test/to-delete.txt',
       });
 
       expect(deleteResult.filesDeleted).toBe(1);
@@ -387,9 +388,9 @@ describe('Framework Integrations', () => {
           stateHandlers: {
             onBeforeOperation: jest.fn(),
             onAfterOperation: jest.fn(),
-            onError: jest.fn()
-          }
-        }
+            onError: jest.fn(),
+          },
+        },
       };
       tool = createKaibanSemanticFilesystemTool(kaibanConfig);
     });
@@ -404,11 +405,14 @@ describe('Framework Integrations', () => {
 
     it('should execute with agent context', async () => {
       const context = { agentId: 'test-agent-001', taskId: 'task-123' };
-      
-      const result = await tool.handler({
-        action: 'natural_query',
-        query: 'read the README file'
-      }, context);
+
+      const result = await tool.handler(
+        {
+          action: 'natural_query',
+          query: 'read the README file',
+        },
+        context
+      );
 
       expect(result.success).toBe(true);
       expect(result.metadata.agentId).toBe('test-agent-001');
@@ -423,8 +427,8 @@ describe('Framework Integrations', () => {
         collaboration: {
           shareWith: ['agent-002', 'agent-003'],
           notifyAgents: true,
-          taskId: 'collaboration-task'
-        }
+          taskId: 'collaboration-task',
+        },
       });
 
       expect(result.success).toBe(true);
@@ -435,10 +439,10 @@ describe('Framework Integrations', () => {
 
     it('should call state handlers', async () => {
       const handlers = kaibanConfig.kaiban!.stateHandlers!;
-      
+
       await tool.handler({
         action: 'read',
-        path: '/test/readme.md'
+        path: '/test/readme.md',
       });
 
       expect(handlers.onBeforeOperation).toHaveBeenCalledWith('read', expect.any(Object));
@@ -447,11 +451,11 @@ describe('Framework Integrations', () => {
 
     it('should call error handler on failure', async () => {
       const handlers = kaibanConfig.kaiban!.stateHandlers!;
-      
+
       try {
         await tool.handler({
           action: 'read',
-          path: '/nonexistent/file.txt'
+          path: '/nonexistent/file.txt',
         });
       } catch (error) {
         expect(handlers.onError).toHaveBeenCalledWith('read', expect.any(Error));
@@ -460,12 +464,12 @@ describe('Framework Integrations', () => {
 
     it('should create task actions', () => {
       const actions = createKaibanFileSystemActions(kaibanConfig);
-      
+
       const readAction = actions.readFile('/test/readme.md');
       expect(readAction.type).toBe('FILESYSTEM_READ');
       expect(readAction.payload.path).toBe('/test/readme.md');
       expect(readAction.meta?.agentId).toBe('test-agent-001');
-      
+
       const writeAction = actions.writeFile('/test/new.txt', 'content');
       expect(writeAction.type).toBe('FILESYSTEM_WRITE');
       expect(writeAction.payload.content).toBe('content');
@@ -473,16 +477,16 @@ describe('Framework Integrations', () => {
 
     it('should create multi-agent coordinator', async () => {
       const coordinator = createKaibanMultiAgentFileCoordinator(kaibanConfig);
-      
+
       expect(coordinator.name).toBe('multi_agent_file_coordinator');
       expect(coordinator.metadata?.category).toBe('coordination');
-      
+
       const result = await coordinator.handler({
         operation: 'lock',
         path: '/test/shared-resource.txt',
         agentIds: ['agent-001', 'agent-002'],
         priority: 1,
-        taskId: 'coordination-task'
+        taskId: 'coordination-task',
       });
 
       expect(result.success).toBe(true);
@@ -491,12 +495,15 @@ describe('Framework Integrations', () => {
     });
 
     it('should handle natural language with agent context', async () => {
-      const result = await tool.handler({
-        query: 'create a shared file for team coordination'
-      }, { 
-        agentId: 'test-agent-001', 
-        taskId: 'team-task' 
-      });
+      const result = await tool.handler(
+        {
+          query: 'create a shared file for team coordination',
+        },
+        {
+          agentId: 'test-agent-001',
+          taskId: 'team-task',
+        }
+      );
 
       expect(result.success).toBe(true);
       expect(result.metadata.agentId).toBe('test-agent-001');
@@ -520,7 +527,7 @@ describe('Framework Integrations', () => {
 
       // Test Mastra
       const mastraResult = await mastraTool.execute({
-        naturalLanguageQuery: testQuery
+        naturalLanguageQuery: testQuery,
       });
       expect(mastraResult.success).toBe(true);
 
@@ -531,13 +538,13 @@ describe('Framework Integrations', () => {
       // Test LlamaIndex
       const llamaResult = await llamaTool.call({
         action: 'natural_query',
-        query: testQuery
+        query: testQuery,
       });
       expect(llamaResult.success).toBe(true);
 
       // Test KaibanJS
       const kaibanResult = await kaibanTool.handler({
-        query: testQuery
+        query: testQuery,
       });
       expect(kaibanResult.success).toBe(true);
     });
@@ -547,46 +554,46 @@ describe('Framework Integrations', () => {
         mastra: { ...baseConfig } as MastraIntegrationConfig,
         langchain: { ...baseConfig } as LangChainIntegrationConfig,
         llama: { ...baseConfig } as LlamaIndexIntegrationConfig,
-        kaiban: { ...baseConfig } as KaibanIntegrationConfig
+        kaiban: { ...baseConfig } as KaibanIntegrationConfig,
       };
 
       // Create the same file through each framework
       const testContent = 'Cross-framework test content';
-      
+
       const mastraTool = createMastraSemanticFilesystemTool(configs.mastra);
       await mastraTool.execute({
-        naturalLanguageQuery: `create a file called mastra-test.txt with content "${testContent}"`
+        naturalLanguageQuery: `create a file called mastra-test.txt with content "${testContent}"`,
       });
 
       const langchainTool = createLangChainSemanticFilesystemTool(configs.langchain);
       await langchainTool.func({
         operation: 'write',
         path: '/test/langchain-test.txt',
-        content: testContent
+        content: testContent,
       });
 
       const llamaTool = createLlamaIndexSemanticFilesystemTool(configs.llama);
       await llamaTool.call({
         action: 'write',
         path: '/test/llama-test.txt',
-        content: testContent
+        content: testContent,
       });
 
       const kaibanTool = createKaibanSemanticFilesystemTool(configs.kaiban);
       await kaibanTool.handler({
         action: 'write',
         path: '/test/kaiban-test.txt',
-        content: testContent
+        content: testContent,
       });
 
       // Verify all files were created with same content
       const searchResult = await filesystem.discoverFiles({
         purpose: 'search_content',
-        target: { semanticQuery: 'Cross-framework test content' }
+        target: { semanticQuery: 'Cross-framework test content' },
       });
 
       expect(searchResult.files.length).toBe(4);
-      expect(searchResult.files.every(f => f.path.includes('test.txt'))).toBe(true);
+      expect(searchResult.files.every((f) => f.path.includes('test.txt'))).toBe(true);
     });
   });
 
@@ -596,7 +603,7 @@ describe('Framework Integrations', () => {
         mastra: { ...baseConfig } as MastraIntegrationConfig,
         langchain: { ...baseConfig } as LangChainIntegrationConfig,
         llama: { ...baseConfig } as LlamaIndexIntegrationConfig,
-        kaiban: { ...baseConfig } as KaibanIntegrationConfig
+        kaiban: { ...baseConfig } as KaibanIntegrationConfig,
       };
 
       const mastraTool = createMastraSemanticFilesystemTool(configs.mastra);
@@ -625,7 +632,7 @@ describe('Framework Integrations', () => {
         mastra: { ...baseConfig } as MastraIntegrationConfig,
         langchain: { ...baseConfig } as LangChainIntegrationConfig,
         llama: { ...baseConfig } as LlamaIndexIntegrationConfig,
-        kaiban: { ...baseConfig } as KaibanIntegrationConfig
+        kaiban: { ...baseConfig } as KaibanIntegrationConfig,
       };
 
       const nonexistentPath = '/test/nonexistent-file.txt';
@@ -634,14 +641,14 @@ describe('Framework Integrations', () => {
       const mastraResult = await mastraTool.execute({
         operation: 'access',
         purpose: 'read',
-        target: { path: nonexistentPath }
+        target: { path: nonexistentPath },
       });
       expect(mastraResult.success).toBe(false);
 
       const langchainTool = createLangChainSemanticFilesystemTool(configs.langchain);
       const langchainResult = await langchainTool.func({
         operation: 'read',
-        path: nonexistentPath
+        path: nonexistentPath,
       });
       expect(langchainResult).toContain('Error');
 
@@ -649,7 +656,7 @@ describe('Framework Integrations', () => {
       try {
         await llamaTool.call({
           action: 'read',
-          path: nonexistentPath
+          path: nonexistentPath,
         });
         fail('Should have thrown an error');
       } catch (error) {
@@ -659,7 +666,7 @@ describe('Framework Integrations', () => {
       const kaibanTool = createKaibanSemanticFilesystemTool(configs.kaiban);
       const kaibanResult = await kaibanTool.handler({
         action: 'read',
-        path: nonexistentPath
+        path: nonexistentPath,
       });
       expect(kaibanResult.success).toBe(false);
     });

@@ -85,7 +85,7 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toBe('Test content');
+      expect(result.content).toBe('Test content');
     });
 
     test('should handle context-wrapped parameters', async () => {
@@ -98,7 +98,7 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toBe('Test content');
+      expect(result.content).toBe('Test content');
     });
 
     test('should handle list operation with fileOrganizer', async () => {
@@ -109,8 +109,8 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.files).toBeDefined();
-      expect(Array.isArray(result.data.files)).toBe(true);
+      expect(result.results).toBeDefined();
+      expect(Array.isArray(result.results)).toBe(true);
     });
 
     test('should handle list operation with context-wrapped parameters', async () => {
@@ -122,8 +122,8 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.files).toBeDefined();
-      expect(Array.isArray(result.data.files)).toBe(true);
+      expect(result.results).toBeDefined();
+      expect(Array.isArray(result.results)).toBe(true);
     });
   });
 
@@ -188,7 +188,7 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toBe('Test content');
+      expect(result.content).toBe('Test content');
     });
 
     test('should write file successfully', async () => {
@@ -206,7 +206,7 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(readResult.success).toBe(true);
-      expect(readResult.data.content).toBe('New content');
+      expect(readResult.content).toBe('New content');
     });
 
     test('should search files successfully', async () => {
@@ -215,9 +215,9 @@ describe('Mastra Integration Fixes', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.files).toBeDefined();
-      expect(Array.isArray(result.data.files)).toBe(true);
-      expect(result.data.files.length).toBeGreaterThan(0);
+      expect(result.results).toBeDefined();
+      expect(Array.isArray(result.results)).toBe(true);
+      expect(result.results.length).toBeGreaterThan(0);
     });
 
     test('should organize files successfully', async () => {
@@ -260,9 +260,9 @@ describe('Mastra Integration Fixes', () => {
 
       console.log('List result:', listResult);
       expect(listResult.success).toBe(true);
-      expect(listResult.data.files).toBeDefined();
-      expect(Array.isArray(listResult.data.files)).toBe(true);
-      expect(listResult.data.files.length).toBeGreaterThan(0);
+      expect(listResult.results).toBeDefined();
+      expect(Array.isArray(listResult.results)).toBe(true);
+      expect(listResult.results.length).toBeGreaterThan(0);
 
       // Verify file was copied
       const readResult = await packfsTools.fileReader.execute({
@@ -272,7 +272,7 @@ describe('Mastra Integration Fixes', () => {
 
       console.log('Read result:', readResult);
       expect(readResult.success).toBe(true);
-      expect(readResult.data.content).toBe('Test content');
+      expect(readResult.content).toBe('Test content');
     });
   });
 });

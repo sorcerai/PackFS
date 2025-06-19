@@ -443,9 +443,19 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
           const inputParams = params.context || params;
 
           if (inputParams.query) {
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               naturalLanguageQuery: inputParams.query,
             });
+
+            // Ensure consistent response structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                ...result.data,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           } else {
             // Handle different parameter formats
             const purpose = inputParams.purpose || 'read';
@@ -463,12 +473,24 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               };
             }
 
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               operation: 'access',
               purpose: purpose,
               target: { path: path },
               preferences: inputParams.preferences || inputParams.options,
             });
+
+            // Ensure consistent response structure and include content field
+            if (result.success && result.data) {
+              return {
+                success: true,
+                exists: result.data.exists,
+                content: result.data.content,
+                metadata: result.data.metadata,
+                executionMetadata: result.metadata,
+              };
+            }
+            return result;
           }
         } catch (error) {
           return {
@@ -521,9 +543,19 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
           const inputParams = params.context || params;
 
           if (inputParams.query) {
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               naturalLanguageQuery: inputParams.query,
             });
+
+            // Ensure consistent response structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                ...result.data,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           } else {
             // Handle different parameter formats
             const purpose = inputParams.purpose || inputParams.mode || 'create';
@@ -553,13 +585,23 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               };
             }
 
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               operation: 'update',
               purpose: purpose,
               target: { path: path },
               content: content,
               options: inputParams.options,
             });
+
+            // Ensure consistent response structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                ...result.data,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           }
         } catch (error) {
           return {
@@ -608,16 +650,28 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
           const inputParams = params.context || params;
 
           if (inputParams.query) {
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               naturalLanguageQuery: inputParams.query,
             });
+
+            // Ensure consistent response structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                results: result.data.files || result.data.results || [],
+                totalFound: result.data.totalFound || 0,
+                searchTime: result.data.searchTime || 0,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           } else {
             // Handle different parameter formats
             const purpose = inputParams.purpose || 'search_content';
             const path = inputParams.path || (inputParams.target && inputParams.target.path) || '.';
             const query = inputParams.searchQuery || inputParams.pattern || '';
 
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               operation: 'discover',
               purpose: purpose,
               target: {
@@ -630,6 +684,18 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
                 recursive: true,
               },
             });
+
+            // Fix response structure: convert 'files' to 'results' and ensure proper structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                results: result.data.files || result.data.results || [],
+                totalFound: result.data.totalFound || 0,
+                searchTime: result.data.searchTime || 0,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           }
         } catch (error) {
           return {
@@ -683,21 +749,47 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
           const inputParams = params.context || params;
 
           if (inputParams.query) {
-            return await baseAdapter.createTool(normalizedConfig).execute({
+            const result = await baseAdapter.createTool(normalizedConfig).execute({
               naturalLanguageQuery: inputParams.query,
             });
+
+            // Ensure consistent response structure
+            if (result.success && result.data) {
+              return {
+                success: true,
+                ...result.data,
+                metadata: result.metadata,
+              };
+            }
+            return result;
           } else {
             // Special handling for list operation which is actually a discover operation
             if (inputParams.purpose === 'list' || inputParams.operation === 'list') {
+              // Use source parameter if provided, otherwise fall back to path or target.path
               const path =
-                inputParams.path || (inputParams.target && inputParams.target.path) || '.';
+                inputParams.source ||
+                inputParams.path ||
+                (inputParams.target && inputParams.target.path) ||
+                '.';
 
-              return await baseAdapter.createTool(normalizedConfig).execute({
+              const result = await baseAdapter.createTool(normalizedConfig).execute({
                 operation: 'discover',
                 purpose: 'list',
                 target: { path: path },
                 options: inputParams.options,
               });
+
+              // Fix response structure: convert 'files' to 'results' and ensure proper structure
+              if (result.success && result.data) {
+                return {
+                  success: true,
+                  results: result.data.files || result.data.results || [],
+                  totalFound: result.data.totalFound || 0,
+                  searchTime: result.data.searchTime || 0,
+                  metadata: result.metadata,
+                };
+              }
+              return result;
             }
 
             // Handle different parameter formats for other operations
@@ -730,12 +822,22 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
 
             // For create_directory operation, we don't need a source
             if (purpose === 'create_directory') {
-              return await baseAdapter.createTool(normalizedConfig).execute({
+              const result = await baseAdapter.createTool(normalizedConfig).execute({
                 operation: 'organize',
                 purpose: purpose,
                 destination: { path: destPath },
                 options: inputParams.options,
               });
+
+              // Ensure consistent response structure
+              if (result.success && result.data) {
+                return {
+                  success: true,
+                  ...result.data,
+                  metadata: result.metadata,
+                };
+              }
+              return result;
             }
 
             // For other operations like copy and move, we need both source and destination
@@ -769,6 +871,14 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
                 };
               }
 
+              // Ensure consistent response structure
+              if (result.data) {
+                return {
+                  success: true,
+                  ...result.data,
+                  metadata: result.metadata,
+                };
+              }
               return result;
             } catch (error) {
               console.error(`Exception in ${purpose} operation:`, error);

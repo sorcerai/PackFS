@@ -195,7 +195,7 @@ async function organizingFilesExample() {
   });
 
   if (listResult.success) {
-    console.log('Directory contents:', listResult.data.files.length, 'files');
+    console.log('Directory contents:', listResult.results.length, 'files');
   }
 
   // Method 2: Context-wrapped parameters
