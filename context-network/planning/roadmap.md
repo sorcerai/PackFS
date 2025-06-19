@@ -93,12 +93,35 @@ Building upon the MVP foundation, Phase 2 focuses on hardening security features
   - LangChain tool with full filesystem operations
   - AutoGPT plugin with command system
   - CrewAI tool with agent coordination
+  - **Mastra native integration with tool factory (Priority: High)**
   - Semantic Kernel adapter
   - Integration tests for each framework
   - Documentation and examples
 - **Dependencies:**
   - Core filesystem interface (completed)
   - Security system (in progress)
+
+#### Mastra Native Integration (High Priority)
+- **Target Date:** 2024-07-15
+- **Status:** Specification Ready
+- **Description:** Native Mastra framework integration with tool factory
+- **Key Deliverables:**
+  - `createPackfsTools()` function for generating Mastra-compatible tools
+  - Intent-based API (AccessIntent, DiscoverIntent, UpdateIntent)
+  - Pre-built Zod schemas for all operations
+  - Built-in security validation at tool level
+  - Semantic content processing for structured documents
+  - Configuration-based tool generation
+  - Integration tests and documentation
+  - Migration guide from custom wrapper patterns
+- **Dependencies:**
+  - Core filesystem interface (completed)
+  - Security system (in progress)
+  - Semantic chunker (completed)
+- **Expected Benefits:**
+  - 90% reduction in integration boilerplate code
+  - Consistent security patterns across Mastra projects
+  - Improved developer experience
 
 ### Feature Timeline
 
@@ -120,6 +143,7 @@ Building upon the MVP foundation, Phase 2 focuses on hardening security features
   - LangChain Integration: Complete tool implementation - **Priority: High**
   - AutoGPT Integration: Full plugin system - **Priority: High**
   - CrewAI Integration: Multi-agent support - **Priority: High**
+  - **Mastra Native Integration: Tool factory with intent-based API - Priority: High**
   - Streaming API: Large file streaming - **Priority: High**
   - Caching System: Three-tier cache architecture - **Priority: Medium**
   - Batch Operations: Bulk file operations - **Priority: Medium**
@@ -202,9 +226,10 @@ Building upon the MVP foundation, Phase 2 focuses on hardening security features
 
 ## Metadata
 - **Created:** Initial project planning
-- **Last Updated:** 2024-01-18
+- **Last Updated:** 2024-06-19
 - **Updated By:** Development team
 
 ## Change History
 - Initial: Created roadmap template
 - 2024-01-18: Updated with current progress, completed Phase 1, adjusted timelines
+- 2024-06-19: Added Mastra native integration milestone and features based on user feedback

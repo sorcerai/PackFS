@@ -48,6 +48,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
 - [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md)
 - [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
+- [ADR-004: Native Mastra Integration Layer](adr_004_native_mastra_integration_layer.md)
 
 #### Deprecated
 - *None yet*
@@ -62,6 +63,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 
 #### Architecture
 - [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md)
+- [ADR-004: Native Mastra Integration Layer](adr_004_native_mastra_integration_layer.md)
 
 #### Technology
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md)
@@ -82,6 +84,7 @@ This index organizes ADRs in multiple ways to help you find relevant decisions:
 - [ADR-001: TypeScript NPM Package Setup for Mastra Compatibility](adr_001_typescript_npm_package_setup_for_mastra_compatibility.md) - January 15
 - [ADR-002: Minimum Viable Package Implementation](adr_002_minimum_viable_package_implementation.md) - January 18
 - [ADR-003: Semantic Interface Redesign Based on LSFS Research](adr_003_semantic_interface_redesign.md) - January 18
+- [ADR-004: Native Mastra Integration Layer](adr_004_native_mastra_integration_layer.md) - June 19
 
 ### ADRs by Component
 
@@ -127,9 +130,10 @@ When a decision's status changes:
 
 ## Metadata
 - **Created:** Initial project setup
-- **Last Updated:** 2024-01-18
+- **Last Updated:** 2024-06-19
 - **Updated By:** Implementation team
 
 ## Change History
 - Initial: Created decision index
 - 2024-01-18: Added ADR-002 for minimum viable package implementation
+- 2024-06-19: Added ADR-004 for native Mastra integration layer

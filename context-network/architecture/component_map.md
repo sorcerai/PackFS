@@ -43,6 +43,7 @@ flowchart TD
     Integration --> LC[LangChain Adapter]
     Integration --> AG[AutoGPT Adapter]
     Integration --> CA[CrewAI Adapter]
+    Integration --> MA[Mastra Adapter]
     Integration --> SK[Semantic Kernel - Planned]
     
     %% Cross-cutting Concerns
@@ -51,10 +52,11 @@ flowchart TD
     SEC -.-> CB
     PV -.-> SEC
     
-    %% Integration Dependencies
+    %% Integration Dependencies  
     LC --> Core
     AG --> Core
     CA --> Core
+    MA --> Core
     SK --> Core
     
     %% Build System
@@ -78,6 +80,7 @@ flowchart TD
 | LangChain Adapter | Integration/Framework | LangChain tool integration | Provide filesystem tools for LangChain agents |
 | AutoGPT Adapter | Integration/Framework | AutoGPT plugin integration | Provide filesystem plugin for AutoGPT |
 | CrewAI Adapter | Integration/Framework | CrewAI tool integration | Provide filesystem tools for CrewAI agents |
+| Mastra Adapter | Integration/Framework | Mastra tool integration | Native tool factory for Mastra agents with intent-based API |
 
 ### Component Details
 
@@ -214,6 +217,42 @@ flowchart TD
 
 **Implementation**: `/workspace/code/src/processors/chunker.ts`
 
+#### Mastra Adapter
+
+**Purpose**: Native integration with the Mastra agent framework through tool factories and intent-based API
+
+**Responsibilities**:
+- Provide `createPackfsTools()` function for generating ready-to-use Mastra tools
+- Implement intent-based API (AccessIntent, DiscoverIntent, UpdateIntent)
+- Integrate with PackFS security system automatically
+- Support permission-based tool generation
+- Provide pre-built Zod schemas for all operations
+- Handle semantic content processing for structured documents
+
+**Dependencies**:
+- **Depends on**: FileSystem Interface, Core Types, Security Engine, Zod schemas
+- **Used by**: Mastra-based agent implementations
+
+**Key Features**:
+- Native Mastra tool factory
+- Intent-based operations API
+- Built-in security validation  
+- Pre-built Zod schemas
+- Configurable permissions
+- Semantic search capabilities
+- Document relationship mapping
+- 90% reduction in integration boilerplate
+
+**Key Interfaces**:
+- `createPackfsTools()`: Generate permission-based Mastra tools
+- `AccessIntent`: Structured read operations
+- `DiscoverIntent`: Search and list operations  
+- `UpdateIntent`: Write and modification operations
+- `PackfsToolConfig`: Configuration interface
+- `MastraSecurityValidator`: Security validation for tools
+
+**Implementation**: `/workspace/code/src/integrations/mastra/`
+
 ### Component Interaction Patterns
 
 #### File Read Operation
@@ -294,6 +333,7 @@ flowchart TD
     LangChain[LangChain] --> FSInterface
     AutoGPT[AutoGPT] --> FSInterface
     CrewAI[CrewAI] --> FSInterface
+    Mastra[Mastra] --> FSInterface
 ```
 
 ### Component Boundaries and Interfaces
@@ -319,6 +359,9 @@ flowchart TD
 - Translates between PackFS and framework APIs
 
 ### Component Evolution
+
+**Recent Additions**:
+1. **Mastra Adapter**: Native tool factory integration with intent-based API (ADR-004)
 
 **Planned Additions**:
 1. **Cloud Backend**: AWS S3, Azure Blob, Google Cloud Storage support
@@ -349,9 +392,10 @@ flowchart TD
 
 ## Metadata
 - **Created:** Initial architecture design
-- **Last Updated:** 2024-01-18
+- **Last Updated:** 2024-06-19
 - **Updated By:** Implementation team
 
 ## Change History
 - Initial: Created component map template
 - 2024-01-18: Updated with implemented PackFS architecture and components
+- 2024-06-19: Added Mastra Adapter component based on user feedback integration
