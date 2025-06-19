@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- **Critical**: Fixed framework integrations to properly check for filesystem initialization
+- Added null checks for `config.filesystem` in LangChain.js, LlamaIndex.TS, and KaibanJS integrations
+- Improved error messages with clear instructions when filesystem is not initialized
+- Standardized error handling across all framework integrations
+
+### Changed
+
+- Enhanced error reporting with more specific error messages
+- Improved TypeScript type safety with proper null checks
+
 ## [0.1.12] - 2025-06-19
 
 ### Fixed

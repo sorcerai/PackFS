@@ -3,11 +3,11 @@
  * KaibanJS: The JavaScript Framework for Building Multi-Agent Systems - https://www.kaibanjs.com/
  */
 
-import type { 
-  BaseIntegrationConfig, 
-  ToolResult, 
-  ToolDescription, 
-  FrameworkToolAdapter 
+import type {
+  BaseIntegrationConfig,
+  ToolResult,
+  ToolDescription,
+  FrameworkToolAdapter,
 } from './types.js';
 
 /**
@@ -18,13 +18,13 @@ export interface KaibanIntegrationConfig extends BaseIntegrationConfig {
   kaiban?: {
     /** Agent ID for tracking operations */
     agentId?: string;
-    
+
     /** Task context for multi-agent coordination */
     taskContext?: Record<string, any>;
-    
+
     /** Enable state persistence */
     enableStatePersistence?: boolean;
-    
+
     /** Custom Redux-style state handlers */
     stateHandlers?: {
       onBeforeOperation?: (operation: string, params: any) => void;
@@ -74,87 +74,106 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
       parameters: this.getKaibanParameters(),
       handler: async (params: any, context?: any): Promise<any> => {
         const agentId = config.kaiban?.agentId || context?.agentId || 'unknown';
-        
+
         try {
           // Pre-operation hook
-          config.kaiban?.stateHandlers?.onBeforeOperation?.(params.action || 'natural_query', params);
-          
+          config.kaiban?.stateHandlers?.onBeforeOperation?.(
+            params.action || 'natural_query',
+            params
+          );
+
           const result = await this.executeOperation(config, params, context);
-          
+
           // Post-operation hook
-          config.kaiban?.stateHandlers?.onAfterOperation?.(params.action || 'natural_query', result);
-          
+          config.kaiban?.stateHandlers?.onAfterOperation?.(
+            params.action || 'natural_query',
+            result
+          );
+
           return this.formatKaibanResponse(result, agentId);
-          
         } catch (error) {
           // Error hook
           const err = error instanceof Error ? error : new Error('Unknown error');
           config.kaiban?.stateHandlers?.onError?.(params.action || 'natural_query', err);
-          
+
           throw err;
         }
       },
       metadata: {
         agentId: config.kaiban?.agentId,
         category: 'filesystem',
-        permissions: ['read', 'write', 'search', 'organize']
-      }
+        permissions: ['read', 'write', 'search', 'organize'],
+      },
     };
   }
 
   getToolDescription(): ToolDescription {
     return {
       name: 'semantic_filesystem',
-      description: 'Multi-agent compatible filesystem operations with semantic understanding and state management. Supports collaborative file operations across agent teams.',
+      description:
+        'Multi-agent compatible filesystem operations with semantic understanding and state management. Supports collaborative file operations across agent teams.',
       parameters: {
         type: 'object',
         properties: {
           action: {
             type: 'string',
             description: 'Type of filesystem operation',
-            enum: ['read', 'write', 'search', 'list', 'organize', 'delete', 'collaborate', 'natural_query']
+            enum: [
+              'read',
+              'write',
+              'search',
+              'list',
+              'organize',
+              'delete',
+              'collaborate',
+              'natural_query',
+            ],
           },
           query: {
             type: 'string',
-            description: 'Natural language description of the operation for multi-agent understanding'
+            description:
+              'Natural language description of the operation for multi-agent understanding',
           },
           path: {
             type: 'string',
-            description: 'File or directory path'
+            description: 'File or directory path',
           },
           content: {
             type: 'string',
-            description: 'Content for write operations'
+            description: 'Content for write operations',
           },
           searchQuery: {
             type: 'string',
-            description: 'Search term or semantic query'
+            description: 'Search term or semantic query',
           },
           collaboration: {
             type: 'object',
-            description: 'Multi-agent collaboration options'
+            description: 'Multi-agent collaboration options',
           },
           options: {
             type: 'object',
-            description: 'Operation-specific options'
-          }
+            description: 'Operation-specific options',
+          },
         },
-        required: []
+        required: [],
       },
       examples: [
         {
-          input: '{"action": "natural_query", "query": "read the shared configuration file for agent coordination"}',
-          description: 'Natural language file access with agent context'
+          input:
+            '{"action": "natural_query", "query": "read the shared configuration file for agent coordination"}',
+          description: 'Natural language file access with agent context',
         },
         {
-          input: '{"action": "write", "path": "shared/team-notes.md", "content": "Meeting notes", "collaboration": {"shareWith": ["agent1", "agent2"], "notifyAgents": true}}',
-          description: 'Collaborative file writing with agent notification'
+          input:
+            '{"action": "write", "path": "shared/team-notes.md", "content": "Meeting notes", "collaboration": {"shareWith": ["agent1", "agent2"], "notifyAgents": true}}',
+          description: 'Collaborative file writing with agent notification',
         },
         {
-          input: '{"action": "search", "searchQuery": "task assignments", "collaboration": {"taskId": "coordination-123"}}',
-          description: 'Search files related to specific multi-agent task'
-        }
-      ]
+          input:
+            '{"action": "search", "searchQuery": "task assignments", "collaboration": {"taskId": "coordination-123"}}',
+          description: 'Search files related to specific multi-agent task',
+        },
+      ],
     };
   }
 
@@ -172,7 +191,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     };
   }
 
@@ -183,11 +202,20 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         action: {
           type: 'string',
           description: 'Type of filesystem operation',
-          enum: ['read', 'write', 'search', 'list', 'organize', 'delete', 'collaborate', 'natural_query']
+          enum: [
+            'read',
+            'write',
+            'search',
+            'list',
+            'organize',
+            'delete',
+            'collaborate',
+            'natural_query',
+          ],
         },
         query: {
           type: 'string',
-          description: 'Natural language description of the operation'
+          description: 'Natural language description of the operation',
         },
         path: { type: 'string' },
         content: { type: 'string' },
@@ -198,15 +226,19 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
             shareWith: { type: 'array', items: { type: 'string' } },
             lockFile: { type: 'boolean' },
             notifyAgents: { type: 'boolean' },
-            taskId: { type: 'string' }
-          }
+            taskId: { type: 'string' },
+          },
         },
-        options: { type: 'object' }
-      }
+        options: { type: 'object' },
+      },
     };
   }
 
-  private async executeOperation(config: KaibanIntegrationConfig, params: any, context?: any): Promise<ToolResult> {
+  private async executeOperation(
+    config: KaibanIntegrationConfig,
+    params: any,
+    context?: any
+  ): Promise<ToolResult> {
     const startTime = Date.now();
 
     // Validate parameters
@@ -214,7 +246,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
     if (!validation.valid) {
       return {
         success: false,
-        error: `Invalid parameters: ${validation.errors?.join(', ')}`
+        error: `Invalid parameters: ${validation.errors?.join(', ')}`,
       };
     }
 
@@ -235,7 +267,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
 
       // Check if the semantic operation was successful
       const success = result.success !== false;
-      
+
       return {
         success,
         data: result,
@@ -244,19 +276,29 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
           executionTime: Date.now() - startTime,
           operationType: params.action || 'natural_query',
           agentId: context?.agentId || config.kaiban?.agentId,
-          taskId: context?.taskId || params.collaboration?.taskId
-        }
+          taskId: context?.taskId || params.collaboration?.taskId,
+        },
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  private async executeNaturalLanguageQuery(config: KaibanIntegrationConfig, query: string, context?: any): Promise<any> {
+  private async executeNaturalLanguageQuery(
+    config: KaibanIntegrationConfig,
+    query: string,
+    context?: any
+  ): Promise<any> {
+    // Ensure filesystem is initialized
+    if (!config.filesystem) {
+      throw new Error(
+        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+      );
+    }
+
     const nlResult = await config.filesystem.interpretNaturalLanguage({
       query,
       context: {
@@ -264,9 +306,9 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         agentContext: {
           ...config.kaiban?.taskContext,
           ...context,
-          agentId: config.kaiban?.agentId
-        }
-      }
+          agentId: config.kaiban?.agentId,
+        },
+      },
     });
 
     if (!nlResult.success) {
@@ -275,7 +317,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
 
     // Execute the interpreted intent
     const intent = nlResult.interpretedIntent;
-    
+
     if ('purpose' in intent) {
       switch (intent.purpose) {
         case 'read':
@@ -283,88 +325,164 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         case 'metadata':
         case 'verify_exists':
         case 'create_or_get':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.accessFile(intent);
-        
+
         case 'create':
         case 'append':
         case 'overwrite':
         case 'merge':
         case 'patch':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.updateContent(intent);
-        
+
         case 'create_directory':
         case 'move':
         case 'copy':
         case 'group_semantic':
         case 'group_keywords':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.organizeFiles(intent);
-        
+
         case 'list':
         case 'find':
         case 'search_content':
         case 'search_semantic':
         case 'search_integrated':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.discoverFiles(intent);
-        
+
         case 'delete_file':
         case 'delete_directory':
         case 'delete_by_criteria':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.removeFiles(intent);
       }
     }
 
     // Handle workflow intents - only if it has workflow structure
     if ('steps' in intent) {
+      // Ensure filesystem is initialized
+      if (!config.filesystem) {
+        throw new Error(
+          'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+        );
+      }
       return await config.filesystem.executeWorkflow(intent);
     }
-    
+
     throw new Error('Unrecognized intent type');
   }
 
-  private async executeKaibanAction(config: KaibanIntegrationConfig, params: any, context?: any): Promise<any> {
+  private async executeKaibanAction(
+    config: KaibanIntegrationConfig,
+    params: any,
+    context?: any
+  ): Promise<any> {
     switch (params.action) {
       case 'read':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.accessFile({
           purpose: 'read',
           target: { path: params.path },
-          preferences: params.options
+          preferences: params.options,
         });
 
       case 'write':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.updateContent({
           purpose: params.append ? 'append' : 'create',
           target: { path: params.path },
           content: params.content,
-          options: params.options
+          options: params.options,
         });
 
       case 'search':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.discoverFiles({
           purpose: 'search_semantic',
           target: { semanticQuery: params.searchQuery },
-          options: params.options
+          options: params.options,
         });
 
       case 'list':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.discoverFiles({
           purpose: 'list',
           target: { path: params.path || '.' },
-          options: params.options
+          options: params.options,
         });
 
       case 'organize':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.organizeFiles({
           purpose: params.operation || 'move',
           source: { path: params.source },
           destination: { path: params.destination },
-          options: params.options
+          options: params.options,
         });
 
       case 'delete':
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         return await config.filesystem.removeFiles({
           purpose: 'delete_file',
           target: { path: params.path },
-          options: params.options
+          options: params.options,
         });
 
       case 'collaborate':
@@ -377,9 +495,9 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
   }
 
   private async handleCollaboration(
-    config: KaibanIntegrationConfig, 
-    collaboration: any, 
-    result: any, 
+    config: KaibanIntegrationConfig,
+    collaboration: any,
+    result: any,
     context?: any
   ): Promise<any> {
     // Add collaboration metadata to result
@@ -391,8 +509,8 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         notified: collaboration.notifyAgents || false,
         taskId: collaboration.taskId,
         agentId: config.kaiban?.agentId || context?.agentId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
 
     // In a real implementation, this would:
@@ -404,10 +522,14 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
     return collaborativeResult;
   }
 
-  private async handleCollaborativeOperation(config: KaibanIntegrationConfig, params: any, context?: any): Promise<any> {
+  private async handleCollaborativeOperation(
+    config: KaibanIntegrationConfig,
+    params: any,
+    context?: any
+  ): Promise<any> {
     // Special handling for multi-agent collaboration scenarios
     const agentId = config.kaiban?.agentId || context?.agentId;
-    
+
     return {
       success: true,
       message: `Collaborative operation initiated by agent ${agentId}`,
@@ -416,8 +538,8 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         operation: params.operation,
         participants: params.participants || [],
         taskId: params.taskId || context?.taskId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 
@@ -427,7 +549,7 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
         success: false,
         error: result.error,
         agentId,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
     }
 
@@ -437,8 +559,8 @@ export class KaibanSemanticFilesystemTool implements FrameworkToolAdapter<Kaiban
       metadata: {
         ...result.metadata,
         agentId,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
   }
 }
@@ -465,8 +587,8 @@ export function createKaibanFileSystemActions(config: KaibanIntegrationConfig) {
       meta: {
         agentId,
         timestamp: Date.now(),
-        operationType: 'read'
-      }
+        operationType: 'read',
+      },
     }),
 
     writeFile: (path: string, content: string, options?: any): KaibanTaskAction => ({
@@ -475,8 +597,8 @@ export function createKaibanFileSystemActions(config: KaibanIntegrationConfig) {
       meta: {
         agentId,
         timestamp: Date.now(),
-        operationType: 'write'
-      }
+        operationType: 'write',
+      },
     }),
 
     searchFiles: (query: string, options?: any): KaibanTaskAction => ({
@@ -485,8 +607,8 @@ export function createKaibanFileSystemActions(config: KaibanIntegrationConfig) {
       meta: {
         agentId,
         timestamp: Date.now(),
-        operationType: 'search'
-      }
+        operationType: 'search',
+      },
     }),
 
     collaborateOnFile: (path: string, operation: string, agents: string[]): KaibanTaskAction => ({
@@ -495,9 +617,9 @@ export function createKaibanFileSystemActions(config: KaibanIntegrationConfig) {
       meta: {
         agentId,
         timestamp: Date.now(),
-        operationType: 'collaborate'
-      }
-    })
+        operationType: 'collaborate',
+      },
+    }),
   };
 }
 
@@ -507,32 +629,33 @@ export function createKaibanFileSystemActions(config: KaibanIntegrationConfig) {
 export function createKaibanMultiAgentFileCoordinator(config: KaibanIntegrationConfig): KaibanTool {
   return {
     name: 'multi_agent_file_coordinator',
-    description: 'Coordinate file operations across multiple agents with conflict resolution and state synchronization',
+    description:
+      'Coordinate file operations across multiple agents with conflict resolution and state synchronization',
     parameters: {
       type: 'object',
       properties: {
         operation: {
           type: 'string',
           enum: ['lock', 'unlock', 'sync', 'resolve_conflict', 'broadcast_change'],
-          description: 'Coordination operation'
+          description: 'Coordination operation',
         },
         path: { type: 'string', description: 'File path to coordinate' },
-        agentIds: { 
-          type: 'array', 
+        agentIds: {
+          type: 'array',
           items: { type: 'string' },
-          description: 'Agents involved in coordination' 
+          description: 'Agents involved in coordination',
         },
         priority: { type: 'number', description: 'Operation priority for conflict resolution' },
-        taskId: { type: 'string', description: 'Associated task ID' }
+        taskId: { type: 'string', description: 'Associated task ID' },
       },
-      required: ['operation', 'path']
+      required: ['operation', 'path'],
     },
     handler: async (params: any, context?: any) => {
       const agentId = config.kaiban?.agentId || context?.agentId;
-      
+
       // Simulate multi-agent coordination logic
       // In a real implementation, this would integrate with KaibanJS's state management
-      
+
       return {
         success: true,
         coordination: {
@@ -543,14 +666,14 @@ export function createKaibanMultiAgentFileCoordinator(config: KaibanIntegrationC
           priority: params.priority || 1,
           taskId: params.taskId,
           timestamp: new Date().toISOString(),
-          status: 'coordinated'
-        }
+          status: 'coordinated',
+        },
       };
     },
     metadata: {
       agentId: config.kaiban?.agentId,
       category: 'coordination',
-      permissions: ['coordinate', 'lock', 'sync']
-    }
+      permissions: ['coordinate', 'lock', 'sync'],
+    },
   };
 }

@@ -15,6 +15,7 @@ async function basicInitializationExample() {
   console.log('Example 1: Basic initialization');
 
   // Initialize with just a working directory
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const packfsTools = createMastraSemanticToolSuite({
     workingDirectory: '/path/to/your/files',
   });
@@ -51,6 +52,7 @@ async function readingFilesExample() {
   }
 
   // Method 2: Context-wrapped parameters (compatible with Mastra's context pattern)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result2 = await packfsTools.fileReader.execute({
     context: {
       purpose: 'read',
@@ -59,6 +61,7 @@ async function readingFilesExample() {
   });
 
   // Method 3: Natural language query
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result3 = await packfsTools.fileReader.execute({
     query: 'read the README file',
   });
@@ -91,6 +94,7 @@ async function writingFilesExample() {
   }
 
   // Method 2: Context-wrapped parameters
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result2 = await packfsTools.fileWriter.execute({
     context: {
       purpose: 'create',
@@ -100,6 +104,7 @@ async function writingFilesExample() {
   });
 
   // Method 3: Natural language query
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result3 = await packfsTools.fileWriter.execute({
     query: 'create a file called todo.txt with a list of tasks',
   });
@@ -128,6 +133,7 @@ async function searchingFilesExample() {
   }
 
   // Method 2: Context-wrapped parameters
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result2 = await packfsTools.fileSearcher.execute({
     context: {
       purpose: 'search_content',
@@ -139,6 +145,7 @@ async function searchingFilesExample() {
   });
 
   // Method 3: Natural language query
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const result3 = await packfsTools.fileSearcher.execute({
     query: 'find all configuration files',
   });
@@ -191,6 +198,7 @@ async function organizingFilesExample() {
   }
 
   // Method 2: Context-wrapped parameters
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const moveResult = await packfsTools.fileOrganizer.execute({
     context: {
       purpose: 'move',
@@ -250,6 +258,7 @@ async function advancedInitializationExample() {
   await semanticBackend.initialize();
 
   // Initialize with custom filesystem and security options
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const packfsTools = createMastraSemanticToolSuite({
     // IMPORTANT: Always provide workingDirectory even with custom filesystem
     workingDirectory: '/path/to/your/files',

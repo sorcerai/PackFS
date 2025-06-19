@@ -3,11 +3,11 @@
  * LangChain JavaScript/TypeScript - https://js.langchain.com/
  */
 
-import type { 
-  BaseIntegrationConfig, 
-  ToolResult, 
-  ToolDescription, 
-  FrameworkToolAdapter 
+import type {
+  BaseIntegrationConfig,
+  ToolResult,
+  ToolDescription,
+  FrameworkToolAdapter,
 } from './types.js';
 
 /**
@@ -18,10 +18,10 @@ export interface LangChainIntegrationConfig extends BaseIntegrationConfig {
   langchain?: {
     /** Enable verbose logging */
     verbose?: boolean;
-    
+
     /** Tool metadata for LangChain */
     metadata?: Record<string, any>;
-    
+
     /** Custom callbacks */
     callbacks?: any[];
   };
@@ -55,59 +55,61 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
           const errorMsg = error instanceof Error ? error.message : 'Unknown error';
           return `Error: ${errorMsg}`;
         }
-      }
+      },
     };
   }
 
   getToolDescription(): ToolDescription {
     return {
       name: 'semantic_filesystem',
-      description: 'Perform intelligent file operations using semantic understanding and natural language. Can read, write, search, organize files with AI-powered understanding.',
+      description:
+        'Perform intelligent file operations using semantic understanding and natural language. Can read, write, search, organize files with AI-powered understanding.',
       parameters: {
         type: 'object',
         properties: {
           query: {
             type: 'string',
-            description: 'Natural language description of the file operation (e.g., "read the config file", "create a notes file with my thoughts", "find all documentation")'
+            description:
+              'Natural language description of the file operation (e.g., "read the config file", "create a notes file with my thoughts", "find all documentation")',
           },
           operation: {
             type: 'string',
             description: 'Specific operation type',
-            enum: ['read', 'write', 'search', 'list', 'organize', 'delete']
+            enum: ['read', 'write', 'search', 'list', 'organize', 'delete'],
           },
           path: {
             type: 'string',
-            description: 'File path when operation requires specific file'
+            description: 'File path when operation requires specific file',
           },
           content: {
             type: 'string',
-            description: 'Content to write when creating/updating files'
+            description: 'Content to write when creating/updating files',
           },
           pattern: {
             type: 'string',
-            description: 'Search pattern or glob for finding files'
+            description: 'Search pattern or glob for finding files',
           },
           options: {
             type: 'object',
-            description: 'Additional options for the operation'
-          }
+            description: 'Additional options for the operation',
+          },
         },
-        required: ['query']
+        required: ['query'],
       },
       examples: [
         {
           input: '{"query": "read the README file"}',
-          description: 'Read a specific file using natural language'
+          description: 'Read a specific file using natural language',
         },
         {
           input: '{"query": "create a todo list file with my daily tasks"}',
-          description: 'Create a new file with content'
+          description: 'Create a new file with content',
         },
         {
           input: '{"query": "find all JavaScript files in the project"}',
-          description: 'Search for files by type'
-        }
-      ]
+          description: 'Search for files by type',
+        },
+      ],
     };
   }
 
@@ -120,7 +122,7 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
 
     return {
       valid: errors.length === 0,
-      errors: errors.length > 0 ? errors : undefined
+      errors: errors.length > 0 ? errors : undefined,
     };
   }
 
@@ -131,24 +133,24 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
       properties: {
         query: {
           type: 'string',
-          description: 'Natural language description of the file operation to perform'
+          description: 'Natural language description of the file operation to perform',
         },
         operation: {
           type: 'string',
           description: 'Specific operation type (optional, can be inferred from query)',
-          enum: ['read', 'write', 'search', 'list', 'organize', 'delete']
+          enum: ['read', 'write', 'search', 'list', 'organize', 'delete'],
         },
         path: {
           type: 'string',
-          description: 'File path when operation requires specific file'
+          description: 'File path when operation requires specific file',
         },
         content: {
           type: 'string',
-          description: 'Content to write when creating/updating files'
+          description: 'Content to write when creating/updating files',
         },
         pattern: {
           type: 'string',
-          description: 'Search pattern or glob for finding files'
+          description: 'Search pattern or glob for finding files',
         },
         options: {
           type: 'object',
@@ -156,15 +158,18 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
           properties: {
             maxResults: { type: 'number' },
             includeContent: { type: 'boolean' },
-            recursive: { type: 'boolean' }
-          }
-        }
+            recursive: { type: 'boolean' },
+          },
+        },
       },
-      required: ['query']
+      required: ['query'],
     };
   }
 
-  private async executeOperation(config: LangChainIntegrationConfig, input: any): Promise<ToolResult> {
+  private async executeOperation(
+    config: LangChainIntegrationConfig,
+    input: any
+  ): Promise<ToolResult> {
     const startTime = Date.now();
 
     // Parse input - LangChain might pass as string or object
@@ -185,7 +190,7 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
     if (!validation.valid) {
       return {
         success: false,
-        error: `Invalid parameters: ${validation.errors?.join(', ')}`
+        error: `Invalid parameters: ${validation.errors?.join(', ')}`,
       };
     }
 
@@ -194,11 +199,17 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
 
       // If we have a natural language query, use NL processing
       if (params.query && !params.operation) {
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
         const nlResult = await config.filesystem.interpretNaturalLanguage({
           query: params.query,
           context: {
-            workingDirectory: config.workingDirectory
-          }
+            workingDirectory: config.workingDirectory,
+          },
         });
 
         if (!nlResult.success) {
@@ -217,19 +228,28 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
         data: result,
         metadata: {
           executionTime: Date.now() - startTime,
-          operationType: params.operation || 'natural_language'
-        }
+          operationType: params.operation || 'natural_language',
+        },
       };
-
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
 
-  private async executeSemanticIntent(config: LangChainIntegrationConfig, intent: any): Promise<any> {
+  private async executeSemanticIntent(
+    config: LangChainIntegrationConfig,
+    intent: any
+  ): Promise<any> {
+    // Ensure filesystem is initialized
+    if (!config.filesystem) {
+      throw new Error(
+        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+      );
+    }
+
     if ('purpose' in intent) {
       switch (intent.purpose) {
         case 'read':
@@ -238,46 +258,86 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
         case 'verify_exists':
         case 'create_or_get':
           return await config.filesystem.accessFile(intent);
-        
+
         case 'create':
         case 'append':
         case 'overwrite':
         case 'merge':
         case 'patch':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.updateContent(intent);
-        
+
         case 'create_directory':
         case 'move':
         case 'copy':
         case 'group_semantic':
         case 'group_keywords':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.organizeFiles(intent);
-        
+
         case 'list':
         case 'find':
         case 'search_content':
         case 'search_semantic':
         case 'search_integrated':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.discoverFiles(intent);
-        
+
         case 'delete_file':
         case 'delete_directory':
         case 'delete_by_criteria':
+          // Ensure filesystem is initialized
+          if (!config.filesystem) {
+            throw new Error(
+              'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+            );
+          }
           return await config.filesystem.removeFiles(intent);
       }
     }
 
     // Handle workflow intents
+    // Ensure filesystem is initialized
+    if (!config.filesystem) {
+      throw new Error(
+        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+      );
+    }
     return await config.filesystem.executeWorkflow(intent);
   }
 
-  private async executeStructuredOperation(config: LangChainIntegrationConfig, params: any): Promise<any> {
+  private async executeStructuredOperation(
+    config: LangChainIntegrationConfig,
+    params: any
+  ): Promise<any> {
+    // Ensure filesystem is initialized
+    if (!config.filesystem) {
+      throw new Error(
+        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+      );
+    }
+
     switch (params.operation) {
       case 'read':
         return await config.filesystem.accessFile({
           purpose: 'read',
           target: { path: params.path },
-          preferences: params.options
+          preferences: params.options,
         });
 
       case 'write':
@@ -285,7 +345,7 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
           purpose: params.append ? 'append' : 'create',
           target: { path: params.path },
           content: params.content,
-          options: params.options
+          options: params.options,
         });
 
       case 'search':
@@ -299,18 +359,18 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
         if (!target.pattern && !target.semanticQuery) {
           target.semanticQuery = 'all files';
         }
-        
+
         return await config.filesystem.discoverFiles({
           purpose: 'search_semantic',
           target,
-          options: params.options
+          options: params.options,
         });
 
       case 'list':
         return await config.filesystem.discoverFiles({
           purpose: 'list',
           target: { path: params.path || '.' },
-          options: params.options
+          options: params.options,
         });
 
       case 'organize':
@@ -318,14 +378,14 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
           purpose: params.mode || 'move',
           source: { path: params.source },
           destination: { path: params.destination },
-          options: params.options
+          options: params.options,
         });
 
       case 'delete':
         return await config.filesystem.removeFiles({
           purpose: 'delete_file',
           target: { path: params.path },
-          options: params.options
+          options: params.options,
         });
 
       default:
@@ -348,17 +408,19 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
 
     if (data.files && Array.isArray(data.files)) {
       // File discovery result
-      const fileList = data.files.map((f: any) => {
-        let info = f.path;
-        if (f.metadata?.size) {
-          info += ` (${f.metadata.size} bytes)`;
-        }
-        if (f.relevanceScore) {
-          info += ` [relevance: ${f.relevanceScore.toFixed(2)}]`;
-        }
-        return info;
-      }).join('\n');
-      
+      const fileList = data.files
+        .map((f: any) => {
+          let info = f.path;
+          if (f.metadata?.size) {
+            info += ` (${f.metadata.size} bytes)`;
+          }
+          if (f.relevanceScore) {
+            info += ` [relevance: ${f.relevanceScore.toFixed(2)}]`;
+          }
+          return info;
+        })
+        .join('\n');
+
       return `Found ${data.files.length} files:\n${fileList}`;
     }
 
@@ -393,7 +455,9 @@ export class LangChainSemanticFilesystemTool implements FrameworkToolAdapter<Lan
 /**
  * Create a LangChain.js compatible semantic filesystem tool
  */
-export function createLangChainSemanticFilesystemTool(config: LangChainIntegrationConfig): LangChainDynamicTool {
+export function createLangChainSemanticFilesystemTool(
+  config: LangChainIntegrationConfig
+): LangChainDynamicTool {
   const adapter = new LangChainSemanticFilesystemTool();
   return adapter.createTool(config);
 }
@@ -413,13 +477,20 @@ export function createLangChainSemanticToolSet(config: LangChainIntegrationConfi
       name: 'read_file',
       description: 'Read file content using path or natural language description',
       func: async (input: any) => {
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
+
         const params = typeof input === 'string' ? { query: input } : input;
         const result = await config.filesystem.accessFile({
           purpose: 'read',
-          target: params.path ? { path: params.path } : { semanticQuery: params.query }
+          target: params.path ? { path: params.path } : { semanticQuery: params.query },
         });
         return result.success ? (result.content as string) : `Error: ${result.message}`;
-      }
+      },
     },
 
     fileWriter: {
@@ -430,21 +501,32 @@ export function createLangChainSemanticToolSet(config: LangChainIntegrationConfi
         properties: {
           path: { type: 'string', description: 'File path to write to' },
           content: { type: 'string', description: 'Content to write' },
-          mode: { type: 'string', enum: ['create', 'append', 'overwrite'], description: 'Write mode' }
+          mode: {
+            type: 'string',
+            enum: ['create', 'append', 'overwrite'],
+            description: 'Write mode',
+          },
         },
-        required: ['path', 'content']
+        required: ['path', 'content'],
       },
       func: async (input: any) => {
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
+
         const params = typeof input === 'string' ? JSON.parse(input) : input;
         const result = await config.filesystem.updateContent({
           purpose: params.mode || 'create',
           target: { path: params.path },
-          content: params.content
+          content: params.content,
         });
-        return result.success ? 
-          `File ${result.created ? 'created' : 'updated'} successfully (${result.bytesWritten} bytes)` :
-          `Error: ${result.message}`;
-      }
+        return result.success
+          ? `File ${result.created ? 'created' : 'updated'} successfully (${result.bytesWritten} bytes)`
+          : `Error: ${result.message}`;
+      },
     },
 
     fileSearcher: {
@@ -454,25 +536,32 @@ export function createLangChainSemanticToolSet(config: LangChainIntegrationConfi
         type: 'object',
         properties: {
           query: { type: 'string', description: 'Search query or pattern' },
-          maxResults: { type: 'number', description: 'Maximum results to return' }
+          maxResults: { type: 'number', description: 'Maximum results to return' },
         },
-        required: ['query']
+        required: ['query'],
       },
       func: async (input: any) => {
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
+
         const params = typeof input === 'string' ? { query: input } : input;
         const result = await config.filesystem.discoverFiles({
           purpose: 'search_semantic',
           target: { semanticQuery: params.query },
-          options: { maxResults: params.maxResults }
+          options: { maxResults: params.maxResults },
         });
-        
+
         if (!result.success) {
           return `Error: ${result.message}`;
         }
-        
-        const fileList = result.files.map(f => f.path).join('\n');
+
+        const fileList = result.files.map((f) => f.path).join('\n');
         return `Found ${result.files.length} files:\n${fileList}`;
-      }
+      },
     },
 
     fileManager: {
@@ -481,49 +570,60 @@ export function createLangChainSemanticToolSet(config: LangChainIntegrationConfi
       schema: {
         type: 'object',
         properties: {
-          action: { type: 'string', enum: ['move', 'copy', 'delete', 'mkdir'], description: 'Management action' },
+          action: {
+            type: 'string',
+            enum: ['move', 'copy', 'delete', 'mkdir'],
+            description: 'Management action',
+          },
           source: { type: 'string', description: 'Source path' },
-          destination: { type: 'string', description: 'Destination path (for move/copy)' }
+          destination: { type: 'string', description: 'Destination path (for move/copy)' },
         },
-        required: ['action', 'source']
+        required: ['action', 'source'],
       },
       func: async (input: any) => {
         const params = typeof input === 'string' ? JSON.parse(input) : input;
-        
+
         let result: any;
-        
+
+        // Ensure filesystem is initialized
+        if (!config.filesystem) {
+          throw new Error(
+            'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+          );
+        }
+
         switch (params.action) {
           case 'move':
           case 'copy':
             result = await config.filesystem.organizeFiles({
               purpose: params.action,
               source: { path: params.source },
-              destination: { path: params.destination }
+              destination: { path: params.destination },
             });
             break;
-            
+
           case 'delete':
             result = await config.filesystem.removeFiles({
               purpose: 'delete_file',
-              target: { path: params.source }
+              target: { path: params.source },
             });
             break;
-            
+
           case 'mkdir':
             result = await config.filesystem.organizeFiles({
               purpose: 'create_directory',
-              destination: { path: params.source }
+              destination: { path: params.source },
             });
             break;
-            
+
           default:
             return `Error: Unknown action ${params.action}`;
         }
-        
-        return result.success ? 
-          `${params.action} operation completed successfully` :
-          `Error: ${result.message}`;
-      }
-    }
+
+        return result.success
+          ? `${params.action} operation completed successfully`
+          : `Error: ${result.message}`;
+      },
+    },
   };
 }
