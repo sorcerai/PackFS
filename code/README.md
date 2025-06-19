@@ -11,7 +11,7 @@ Inspired by the research in ["LLM-based Semantic File System for Large Codebases
 ## Features
 
 - 🧠 **Semantic Operations**: Natural language file operations - "create a config file", "find all documentation", "organize by topic"
-- 🤖 **LLM Agent Integration**: Native support for Mastra, LangChain.js, LlamaIndex.TS, and KaibanJS frameworks
+- 🤖 **LLM Agent Integration**: Native Mastra integration with tool factory pattern, plus support for LangChain.js, LlamaIndex.TS, and KaibanJS
 - 📝 **Intent-Based Interface**: Replace traditional read/write with semantic operations like `accessFile`, `updateContent`, `discoverFiles`
 - 🔍 **Intelligent Indexing**: Automatic keyword extraction and semantic file indexing for fast discovery
 - 🔄 **Backward Compatibility**: Adapter pattern allows gradual migration from traditional filesystem operations
@@ -74,25 +74,83 @@ const content = await backend.read('/safe/file.txt');
 
 ### Framework Integrations
 
-#### Mastra (TypeScript-First AI Framework)
+#### Mastra (Native Integration)
+
+PackFS provides native Mastra integration with a tool factory pattern that reduces boilerplate from 160+ lines to under 20:
 
 ```typescript
-import { createMastraSemanticFilesystemTool, MemorySemanticBackend } from 'packfs-core';
+import { createPackfsTools } from 'packfs-core/integrations/mastra';
 
-const filesystem = new MemorySemanticBackend();
-const tool = createMastraSemanticFilesystemTool({
-  filesystem,
-  workingDirectory: '/project',
-  mastra: {
-    enableTracing: true,
-    agentContext: { role: 'developer' }
+// Create tools with minimal configuration
+const tools = createPackfsTools({
+  rootPath: '/project',
+  permissions: ['read', 'write', 'search'],
+  security: {
+    maxFileSize: 5 * 1024 * 1024, // 5MB limit
+    allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
+    blockedPaths: ['node_modules', '.git']
   }
 });
 
-// Use with Mastra agents
-const result = await tool.execute({
-  naturalLanguageQuery: "create a README with project information"
+// Use individual tools in your Mastra agent
+const fileContent = await tools.fileReader.execute({
+  context: {
+    purpose: 'read',
+    target: { path: '/project/README.md' }
+  },
+  runtimeContext // Mastra's runtime context
 });
+
+const searchResults = await tools.fileSearcher.execute({
+  context: {
+    purpose: 'search_content',
+    target: { path: '/project' },
+    options: { pattern: 'API.*endpoint' }
+  },
+  runtimeContext
+});
+
+// Create new files with validation
+await tools.fileWriter.execute({
+  context: {
+    purpose: 'create',
+    target: { path: '/project/config.json' },
+    content: JSON.stringify({ database: { host: 'localhost' } })
+  },
+  runtimeContext
+});
+```
+
+**Semantic Operations**: The tools support intent-based operations:
+- **AccessIntent**: `read`, `metadata`, `exists`
+- **DiscoverIntent**: `list`, `search_content`, `search_semantic`  
+- **UpdateIntent**: `create`, `update`, `append`, `delete`
+
+**Advanced Configuration**:
+
+```typescript
+const tools = createPackfsTools({
+  rootPath: '/workspace',
+  permissions: ['read', 'write', 'search', 'list'],
+  security: {
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts', '.py'],
+    blockedPaths: ['node_modules', '.git', '.env', 'secrets'],
+    rateLimiting: {
+      maxRequests: 100,
+      windowMs: 60000 // 1 minute
+    }
+  },
+  semantic: {
+    enableRelationships: true,
+    chunkSize: 2000,
+    overlapSize: 200,
+    relevanceThreshold: 0.5
+  }
+});
+
+// Generated tools: fileReader, fileWriter, fileSearcher, fileLister
+// Each tool includes automatic security validation and error handling
 ```
 
 #### LangChain.js
@@ -212,7 +270,12 @@ const organized = await fs.organizeFiles({
 
 ### Framework Integrations
 
-- `createMastraSemanticFilesystemTool` - Mastra framework integration
+#### Native Mastra Integration
+- `createPackfsTools(config)` - Native tool factory for Mastra agents
+- `MastraSecurityValidator` - Security validation with path restrictions and rate limiting
+- Intent-based schemas: `AccessIntent`, `DiscoverIntent`, `UpdateIntent`
+
+#### Legacy Framework Integrations  
 - `createLangChainSemanticFilesystemTool` - LangChain.js integration
 - `createLlamaIndexSemanticFilesystemTool` - LlamaIndex.TS integration
 - `createKaibanSemanticFilesystemTool` - KaibanJS multi-agent integration
