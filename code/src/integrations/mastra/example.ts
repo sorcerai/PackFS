@@ -6,6 +6,7 @@
  */
 
 import { createMastraSemanticToolSuite } from '../mastra.js';
+import { DiskSemanticBackend } from '../../semantic/disk-semantic-backend.js';
 
 /**
  * Example 1: Basic initialization with workingDirectory
@@ -241,9 +242,6 @@ async function errorHandlingExample() {
  */
 async function advancedInitializationExample() {
   console.log('\nExample 7: Advanced initialization');
-
-  // Import required modules
-  const { DiskSemanticBackend } = require('../../semantic/disk-semantic-backend.js');
 
   // Create and initialize a custom semantic backend
   const semanticBackend = new DiskSemanticBackend('/path/to/your/files', {

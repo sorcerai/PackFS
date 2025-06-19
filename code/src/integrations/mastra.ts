@@ -9,6 +9,7 @@ import type {
   ToolDescription,
   FrameworkToolAdapter,
 } from './types.js';
+import { DiskSemanticBackend } from '../semantic/disk-semantic-backend.js';
 
 /**
  * Mastra-specific configuration extending base config
@@ -796,9 +797,6 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
  */
 function createDefaultFilesystem(config: MastraIntegrationConfig): any {
   try {
-    // Import required modules
-    const { DiskSemanticBackend } = require('../semantic/disk-semantic-backend.js');
-
     // Get base path from config
     const basePath = config.workingDirectory || config.rootPath || config.basePath;
 
