@@ -6,8 +6,8 @@
  * (useful for initial releases where tests need refinement)
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
+import { execSync } from 'child_process';
+import fs from 'fs';
 
 function runCommand(command, description) {
   console.log(`\n🔄 ${description}...`);

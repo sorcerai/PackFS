@@ -26,50 +26,76 @@ npm install packfs-core
 
 ## Quick Start
 
-### Semantic Operations
+### Primary API: Natural Language Operations
 
 ```typescript
-import { MemorySemanticBackend } from 'packfs-core';
+import { createFileSystem } from 'packfs-core';
 
-// Initialize semantic filesystem
-const fs = new MemorySemanticBackend();
+// Initialize filesystem with one line
+const fs = createFileSystem('/workspace');
 
-// Natural language file operations
-const result = await fs.interpretNaturalLanguage({
-  query: "create a config file with database settings",
-  context: { workingDirectory: "/app" }
+// Natural language file operations - the primary interface for LLMs
+await fs.executeNaturalLanguage(
+  "Create a config.json file with default database settings"
+);
+
+await fs.executeNaturalLanguage(
+  "Find all documentation files and organize them in a docs folder"
+);
+
+// Semantic search
+const results = await fs.findFiles('configuration files', {
+  searchType: 'semantic',
+  maxResults: 5
 });
 
-// Intent-based operations
-const configResult = await fs.updateContent({
-  purpose: 'create',
-  target: { path: '/app/config.json' },
-  content: JSON.stringify({ database: { host: 'localhost', port: 5432 } })
+// The result includes interpreted intent and confidence
+const result = await fs.executeNaturalLanguage(
+  "Backup all JavaScript files modified today"
+);
+console.log(`Operation confidence: ${result.confidence}`);
+console.log(`Interpreted as: ${JSON.stringify(result.interpretedIntent)}`);
+```
+
+### Semantic API: Intent-Based Operations
+
+```typescript
+// For more control, use the semantic backend directly
+const backend = fs.getSemanticBackend();
+
+// Intent-based file access
+const configResult = await backend.accessFile({
+  purpose: 'read',
+  target: { path: 'config.json' },
+  preferences: { includeMetadata: true }
 });
 
 // Semantic file discovery
-const docs = await fs.discoverFiles({
+const docs = await backend.discoverFiles({
   purpose: 'search_semantic',
-  target: { semanticQuery: 'documentation and readme files' }
+  target: { semanticQuery: 'API documentation' },
+  options: { maxResults: 10 }
 });
 
-console.log(`Found ${docs.files.length} documentation files`);
+// Intelligent file organization
+await backend.organizeFiles({
+  purpose: 'group_semantic',
+  target: { directory: 'organized' },
+  criteria: 'Group files by their semantic purpose'
+});
 ```
 
-### Traditional Interface (Backward Compatible)
+### Legacy API: POSIX-Style (Backward Compatible)
 
 ```typescript
-import { DiskBackend, SecurityEngine } from 'packfs-core';
+// Traditional operations are still available for gradual migration
+const fs = createFileSystem('/workspace');
 
-// Traditional POSIX-style operations still supported
-const security = new SecurityEngine({
-  maxFileSize: 1024 * 1024,
-  allowedExtensions: ['txt', 'md', 'json'],
-  allowedPaths: ['/safe/**']
-});
-
-const backend = new DiskBackend({ security });
-const content = await backend.read('/safe/file.txt');
+// These work but consider using natural language instead
+await fs.writeFile('file.txt', 'content');
+const content = await fs.readFile('file.txt');
+await fs.mkdir('new-folder');
+const files = await fs.readdir('.');
 ```
 
 ### Framework Integrations
