@@ -3,8 +3,14 @@
  */
 
 import type { FileMetadata, ReadOptions, WriteOptions } from './types.js';
+import { Logger, CategoryLogger } from './logger.js';
 
 export abstract class FileSystemInterface {
+  protected logger: CategoryLogger;
+
+  constructor() {
+    this.logger = Logger.getInstance().createChildLogger(this.constructor.name);
+  }
   /**
    * Read file contents
    */

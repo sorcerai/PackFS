@@ -25,6 +25,7 @@ import {
   SemanticConfig,
 } from './types.js';
 import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor.js';
+import { Logger, CategoryLogger } from '../core/logger.js';
 
 interface SemanticIndexEntry {
   path: string;
@@ -56,12 +57,14 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   private indexLoaded = false;
   private readonly maxFileSize: number;
   private readonly indexVersion = '1.0.0';
+  private readonly logger: CategoryLogger;
 
   constructor(basePath: string, config?: Partial<SemanticConfig>) {
     super(config);
     this.basePath = basePath;
     this.indexPath = join(basePath, '.packfs', 'semantic-index.json');
     this.maxFileSize = 50 * 1024 * 1024; // 50MB max file size for indexing
+    this.logger = Logger.getInstance().createChildLogger('DiskSemanticBackend');
 
     this.index = {
       version: this.indexVersion,
@@ -70,16 +73,20 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       entries: {},
       keywordMap: {},
     };
+
+    this.logger.info(`Initialized semantic backend at ${basePath}`);
   }
 
   /**
    * Initialize the semantic backend and load/create index
    */
   async initialize(): Promise<void> {
+    this.logger.info('Starting semantic backend initialization');
     try {
       // Ensure base directory exists
       await fs.mkdir(this.basePath, { recursive: true });
       await fs.mkdir(dirname(this.indexPath), { recursive: true });
+      this.logger.debug('Created directories');
 
       // Load or create semantic index
       await this.loadIndex();
@@ -88,7 +95,9 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       await this.updateIndexIfNeeded();
 
       this.indexLoaded = true;
+      this.logger.info('Semantic backend initialization complete');
     } catch (error) {
+      this.logger.error('Failed to initialize semantic disk backend', { error });
       throw new Error(
         `Failed to initialize semantic disk backend: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -96,6 +105,7 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   }
 
   async accessFile(intent: FileAccessIntent): Promise<FileAccessResult> {
+    this.logger.debug('Processing file access intent', intent);
     await this.ensureIndexLoaded();
 
     // Handle direct path access first
@@ -148,6 +158,7 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   }
 
   async updateContent(intent: ContentUpdateIntent): Promise<ContentUpdateResult> {
+    this.logger.debug('Processing content update intent', intent);
     await this.ensureIndexLoaded();
 
     // Handle direct path access first
@@ -184,10 +195,12 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
 
       // Update semantic index
       if (result.success) {
+        this.logger.debug('Updating semantic index for file', { path: relativePath });
         await this.updateFileIndex(relativePath);
         await this.saveIndex();
       }
 
+      this.logger.info('Content update completed', { path: relativePath, success: result.success, created: result.created });
       return result;
     }
 
