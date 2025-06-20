@@ -1,4 +1,5 @@
 import { CompressionStrategy, CompressionHints, CompressedChunk } from './CompressionStrategy';
+const lz4 = require('lz4');
 
 /**
  * LZ4 compression strategy - prioritizes speed over compression ratio
@@ -9,11 +10,11 @@ export class LZ4Strategy extends CompressionStrategy {
   readonly priority = 'speed' as const;
   readonly supportsStreaming = true;
   
-  async compress(data: Buffer, hints: CompressionHints): Promise<CompressedChunk> {
+  async compress(data: Buffer, _hints: CompressionHints): Promise<CompressedChunk> {
     const startTime = performance.now();
     
-    // In real implementation, this would use lz4 bindings (e.g., lz4-napi)
-    const compressed = this.simulateLZ4Compression(data);
+    // Use real LZ4 compression
+    const compressed = Buffer.from(lz4.encode(data));
     
     const compressionTime = performance.now() - startTime;
     
@@ -33,8 +34,8 @@ export class LZ4Strategy extends CompressionStrategy {
   async decompress(chunk: CompressedChunk): Promise<Buffer> {
     const startTime = performance.now();
     
-    // LZ4 decompression is extremely fast
-    const result = this.simulateLZ4Decompression(chunk.data);
+    // Use real LZ4 decompression
+    const result = Buffer.from(lz4.decode(chunk.data));
     
     const decompressionTime = performance.now() - startTime;
     (chunk.metadata as any).decompressionTime = decompressionTime;
@@ -49,7 +50,7 @@ export class LZ4Strategy extends CompressionStrategy {
       read() {
         // LZ4 can decompress in chunks very efficiently
         try {
-          const decompressed = this.simulateLZ4Decompression(chunk.data);
+          const decompressed = Buffer.from(lz4.decode(chunk.data));
           this.push(decompressed);
           this.push(null);
         } catch (error) {
@@ -84,7 +85,7 @@ export class LZ4Strategy extends CompressionStrategy {
     }
     
     // Ideal for development environments
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env['NODE_ENV'] === 'development') {
       return true;
     }
     
@@ -131,46 +132,4 @@ export class LZ4Strategy extends CompressionStrategy {
            mimeType.includes('html');
   }
   
-  // Mock LZ4 compression - replace with actual lz4 bindings in production
-  private simulateLZ4Compression(data: Buffer): Buffer {
-    // LZ4 typically achieves 50-70% compression ratio very quickly
-    const compressionRatio = 0.6; // 40% reduction
-    const compressedSize = Math.floor(data.length * compressionRatio);
-    
-    const compressed = Buffer.alloc(compressedSize + 12);
-    
-    // LZ4 header simulation
-    compressed.writeUInt32LE(0x184D2204, 0); // LZ4 magic number
-    compressed.writeUInt32LE(data.length, 4); // Original size
-    compressed.writeUInt32LE(compressedSize, 8); // Compressed size
-    
-    // Mock compressed data (simplified)
-    data.copy(compressed, 12, 0, Math.min(data.length, compressedSize));
-    
-    return compressed;
-  }
-  
-  private simulateLZ4Decompression(data: Buffer): Buffer {
-    // Verify LZ4 magic number
-    const magic = data.readUInt32LE(0);
-    if (magic !== 0x184D2204) {
-      throw new Error('Invalid LZ4 data: magic number mismatch');
-    }
-    
-    const originalSize = data.readUInt32LE(4);
-    const compressedSize = data.readUInt32LE(8);
-    
-    const result = Buffer.alloc(originalSize);
-    const compressedData = data.subarray(12);
-    
-    // Mock decompression - copy and expand
-    compressedData.copy(result, 0);
-    
-    // Fill remaining bytes (in real LZ4, this would be proper decompression)
-    for (let i = compressedData.length; i < originalSize; i++) {
-      result[i] = compressedData[i % compressedData.length];
-    }
-    
-    return result;
-  }
 }

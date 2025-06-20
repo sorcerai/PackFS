@@ -7,6 +7,9 @@ export * from './backends/index.js';
 export * from './processors/index.js';
 export * from './semantic/index.js';
 export * from './integrations/index.js';
+export * from './enhanced/index.js';
+export * from './compression/index.js';
+export * from './storage/index.js';
 
 // Convenience exports for common use cases
 import { createEnhancedFileSystem as createEnhancedFileSystemBase } from './semantic/compatibility-adapter.js';

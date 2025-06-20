@@ -6,7 +6,7 @@
  */
 
 import { FakeFS, PortablePath } from '@yarnpkg/fslib';
-import { CompressionEngine } from './CompressionEngine';
+import { CompressionEngine } from '../compression/CompressionEngine';
 
 export interface StorageTierConfig {
   activeThreshold: number;      // 0.8 = keep files accessed >80% as uncompressed
@@ -43,13 +43,15 @@ export interface TierMetrics {
 export class HybridStorageStrategy {
   private accessStats = new Map<PortablePath, FileAccessStats>();
   private tierMetrics = new Map<string, TierMetrics>();
-  private compressionEngine: CompressionEngine;
+  // TODO: Implement actual compression using this engine instead of mock compression
+  // @ts-ignore - Initialized but not yet used in implementation
+  private _compressionEngine: CompressionEngine;
   private config: StorageTierConfig;
   
   constructor(
     private fs: FakeFS<PortablePath>,
     config: Partial<StorageTierConfig> = {},
-    compressionEngine?: CompressionEngine
+    _compressionEngine?: CompressionEngine
   ) {
     this.config = {
       // Production-validated thresholds
@@ -62,7 +64,7 @@ export class HybridStorageStrategy {
       ...config
     };
     
-    this.compressionEngine = compressionEngine || new CompressionEngine({
+    this._compressionEngine = _compressionEngine || new CompressionEngine({
       name: 'hybrid-production',
       development: false,
       maxMemoryUsage: 512 * 1024 * 1024, // 512MB
@@ -180,11 +182,15 @@ export class HybridStorageStrategy {
         const sizeBefore = await this.getFileSize(file);
         
         if (this.shouldPromote(currentTier, optimalTier)) {
-          await this.promoteFile(file, optimalTier);
-          report.filesPromoted++;
+          if (optimalTier === 'active' || optimalTier === 'compressed') {
+            await this.promoteFile(file, optimalTier);
+            report.filesPromoted++;
+          }
         } else {
-          await this.demoteFile(file, optimalTier);
-          report.filesDemoted++;
+          if (optimalTier === 'compressed' || optimalTier === 'archive') {
+            await this.demoteFile(file, optimalTier);
+            report.filesDemoted++;
+          }
         }
         
         const sizeAfter = await this.getFileSize(file);
@@ -221,9 +227,9 @@ export class HybridStorageStrategy {
     let totalSize = 0;
     let compressedSize = 0;
     let hotFiles = 0;
-    let totalAccessTime = 0;
+    // let totalAccessTime = 0; // Reserved for future use
     
-    for (const [path, stats] of this.accessStats) {
+    for (const [_path, stats] of this.accessStats) {
       metrics.tierDistribution[stats.tier]++;
       
       if (stats.isHot) {
@@ -362,6 +368,11 @@ export class HybridStorageStrategy {
     return 'compressed'; // Default to compressed tier
   }
   
+  private shouldPromote(currentTier: string, targetTier: string): boolean {
+    const tierOrder = ['archive', 'compressed', 'active'];
+    return tierOrder.indexOf(targetTier) > tierOrder.indexOf(currentTier);
+  }
+
   private async promoteFile(path: PortablePath, targetTier: 'active' | 'compressed'): Promise<void> {
     const content = await this.readFile(path);
     
@@ -374,7 +385,7 @@ export class HybridStorageStrategy {
     
     this.setFileTier(path, targetTier);
   }
-  
+
   private async demoteFile(path: PortablePath, targetTier: 'compressed' | 'archive'): Promise<void> {
     const content = await this.readFile(path);
     
@@ -432,8 +443,8 @@ export class HybridStorageStrategy {
     return compressed;
   }
   
-  private mockDecompress(data: Buffer, tier?: string): Buffer {
-    const originalSize = data.readUInt32LE(0);
+  private mockDecompress(data: Buffer, _tier?: string): Buffer {
+    const originalSize = data.readUInt32LE(0) || 0;
     const result = Buffer.alloc(originalSize);
     
     const compressedData = data.subarray(8);
@@ -441,7 +452,7 @@ export class HybridStorageStrategy {
     
     // Fill remaining bytes
     for (let i = compressedData.length; i < originalSize; i++) {
-      result[i] = compressedData[i % compressedData.length];
+      result[i] = compressedData[i % compressedData.length] ?? 0;
     }
     
     return result;
@@ -475,11 +486,6 @@ export class HybridStorageStrategy {
     metrics.averageAccessTime = (metrics.averageAccessTime * (metrics.totalFiles - 1) + accessTime) / metrics.totalFiles;
     
     this.tierMetrics.set(tier, metrics);
-  }
-  
-  private shouldPromote(currentTier: string, targetTier: string): boolean {
-    const tierOrder = ['archive', 'compressed', 'active'];
-    return tierOrder.indexOf(targetTier) > tierOrder.indexOf(currentTier);
   }
   
   private calculateCompressionImprovement(): number {
@@ -547,7 +553,7 @@ export class HybridStorageStrategy {
 
 // Supporting interfaces
 
-interface OptimizationReport {
+export interface OptimizationReport {
   filesProcessed: number;
   spaceReclaimed: number;
   filesPromoted: number;
@@ -556,7 +562,7 @@ interface OptimizationReport {
   duration: number;
 }
 
-interface StorageMetrics {
+export interface StorageMetrics {
   totalFiles: number;
   tierDistribution: {
     active: number;
@@ -569,7 +575,7 @@ interface StorageMetrics {
   hotFilesPercentage: number;
 }
 
-interface AccessPatternAnalysis {
+export interface AccessPatternAnalysis {
   hotFiles: Array<{ path: PortablePath; stats: FileAccessStats }>;
   coldFiles: Array<{ path: PortablePath; stats: FileAccessStats }>;
   candidates: {

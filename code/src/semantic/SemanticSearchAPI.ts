@@ -42,8 +42,10 @@ export class SemanticSearchEngine {
   
   constructor(
     private fs: FakeFS<PortablePath>,
-    private options: SemanticSearchConfig = DEFAULT_CONFIG
-  ) {}
+_options: SemanticSearchConfig = DEFAULT_CONFIG
+  ) {
+    // Store options if needed in the future
+  }
   
   /**
    * Execute natural language search - Production API
@@ -258,7 +260,10 @@ export class SemanticSearchEngine {
     
     const words = text.toLowerCase().split(/\s+/);
     for (let i = 0; i < words.length && i < vector.length; i++) {
-      vector[i] = this.hashStringToFloat(words[i]);
+      const word = words[i];
+      if (word) {
+        vector[i] = this.hashStringToFloat(word);
+      }
     }
     
     return this.normalizeVector(vector);
@@ -279,7 +284,7 @@ export class SemanticSearchEngine {
     if (magnitude === 0) return vector;
     
     for (let i = 0; i < vector.length; i++) {
-      vector[i] /= magnitude;
+      vector[i] = vector[i]! / magnitude;
     }
     
     return vector;
@@ -288,7 +293,7 @@ export class SemanticSearchEngine {
   private calculateCosineSimilarity(a: Float32Array, b: Float32Array): number {
     let dotProduct = 0;
     for (let i = 0; i < Math.min(a.length, b.length); i++) {
-      dotProduct += a[i] * b[i];
+      dotProduct += (a[i] ?? 0) * (b[i] ?? 0);
     }
     return Math.max(0, dotProduct); // Ensure non-negative
   }
@@ -351,7 +356,7 @@ export class SemanticSearchEngine {
     return results;
   }
   
-  private async getFilesInTier(tier: string): Promise<PortablePath[]> {
+  private async getFilesInTier(_tier: string): Promise<PortablePath[]> {
     // Mock implementation - in production, this would query the actual tier
     return this.getAllFiles();
   }
@@ -445,7 +450,7 @@ class PerformanceTracker {
   private cacheHits = 0;
   private cacheRequests = 0;
   
-  recordSearch(responseTime: number, resultCount: number): void {
+  recordSearch(responseTime: number, _resultCount: number): void {
     this.responseTimes.push(responseTime);
     this.searchCount++;
   }

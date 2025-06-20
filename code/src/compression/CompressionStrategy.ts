@@ -82,7 +82,7 @@ export class StrategyRegistry {
         
         if (hints.isHot) {
           // For hot files, prefer speed
-          return aPriority === 'speed' ? -1 : bPriority === 'speed' ? 1 : 0;
+          return aPriority === 3 ? -1 : bPriority === 3 ? 1 : 0;
         }
         
         // For cold files, prefer compression ratio
@@ -104,6 +104,6 @@ export class StrategyRegistry {
   }
   
   private getDefault(): CompressionStrategy {
-    return this.strategies.get('lz4') || Array.from(this.strategies.values())[0];
+    return this.strategies.get('lz4') || Array.from(this.strategies.values())[0] as CompressionStrategy;
   }
 }

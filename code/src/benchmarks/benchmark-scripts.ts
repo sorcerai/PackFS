@@ -8,9 +8,8 @@
  */
 
 import { performance } from 'perf_hooks';
-import { createEnhancedFileSystem, ProductionPresets } from './PackFSExtensions';
-import { SemanticSearchEngine } from './SemanticSearchAPI';
-import { HybridStorageStrategy } from './HybridStorageStrategy';
+// import { createEnhancedFileSystem, ProductionPresets } from '../enhanced/EnhancedPackFS';
+import { createSimpleEnhancedFileSystem } from '../enhanced/SimpleEnhancedPackFS.js';
 
 export interface BenchmarkResult {
   testName: string;
@@ -134,7 +133,7 @@ export class PackFSBenchmarkSuite {
     suite.summary = this.calculateSuiteSummary(suite.results);
     
     // Validate 44% compression efficiency
-    const avgCompressionRatio = suite.results.reduce((sum, r) => sum + (r.metrics.compressionRatio || 1), 0) / suite.results.length;
+    const avgCompressionRatio = suite.results.reduce((sum, r) => sum + ((r.metrics && r.metrics['compressionRatio']) || 1), 0) / suite.results.length;
     suite.summary.validated = avgCompressionRatio <= 0.56; // 44% compression = 56% remaining
     
     console.log(`✅ Compression: ${suite.summary.validated ? 'PASSED' : 'FAILED'} (ratio: ${(avgCompressionRatio * 100).toFixed(1)}%)\n`);
@@ -318,7 +317,7 @@ export class PackFSBenchmarkSuite {
         metrics: {
           resultCount: results.length,
           query,
-          relevanceScores: results.map(r => r.relevanceScore)
+          relevanceScores: results.map((r: any) => r.relevanceScore)
         }
       };
     } catch (error) {
@@ -327,7 +326,7 @@ export class PackFSBenchmarkSuite {
         duration: performance.now() - startTime,
         memoryUsage: process.memoryUsage().heapUsed - memoryBefore,
         success: false,
-        metrics: { error: error.message }
+        metrics: { error: (error as Error).message }
       };
     }
   }
@@ -364,7 +363,7 @@ export class PackFSBenchmarkSuite {
         duration: performance.now() - startTime,
         memoryUsage: process.memoryUsage().heapUsed - memoryBefore,
         success: false,
-        metrics: { error: error.message }
+        metrics: { error: (error as Error).message }
       };
     }
   }
@@ -374,20 +373,20 @@ export class PackFSBenchmarkSuite {
     const memoryBefore = process.memoryUsage().heapUsed;
     
     try {
-      let result;
+      // let result;
       
       switch (test.tier) {
         case 'active':
-          result = await fs.readFilePromise('hot-file.js');
+          await fs.readFilePromise('hot-file.js');
           break;
         case 'compressed':
-          result = await fs.readFilePromise('warm-file.js');
+          await fs.readFilePromise('warm-file.js');
           break;
         case 'archive':
-          result = await fs.readFilePromise('cold-file.js');
+          await fs.readFilePromise('cold-file.js');
           break;
         case 'optimization':
-          result = await fs.optimizeStorage();
+          await fs.optimizeStorage();
           break;
       }
       
@@ -411,12 +410,12 @@ export class PackFSBenchmarkSuite {
         duration: performance.now() - startTime,
         memoryUsage: process.memoryUsage().heapUsed - memoryBefore,
         success: false,
-        metrics: { error: error.message }
+        metrics: { error: (error as Error).message }
       };
     }
   }
   
-  private async measureCompatibility(originalFS: any, enhancedFS: any, method: string): Promise<BenchmarkResult> {
+  private async measureCompatibility(_originalFS: any, enhancedFS: any, method: string): Promise<BenchmarkResult> {
     const startTime = performance.now();
     
     try {
@@ -443,7 +442,7 @@ export class PackFSBenchmarkSuite {
         duration: performance.now() - startTime,
         memoryUsage: 0,
         success: false,
-        metrics: { error: error.message }
+        metrics: { error: (error as Error).message }
       };
     }
   }
@@ -505,7 +504,7 @@ export class PackFSBenchmarkSuite {
         duration: performance.now() - startTime,
         memoryUsage: process.memoryUsage().heapUsed - memoryBefore,
         success: false,
-        metrics: { error: error.message }
+        metrics: { error: (error as Error).message }
       };
     }
   }

@@ -1,0 +1,2 @@
+The EnhancedPackFS requires significant refactoring to be compatible with the current version of @yarnpkg/fslib.
+For now, we're using SimpleEnhancedPackFS which provides the core logging functionality.

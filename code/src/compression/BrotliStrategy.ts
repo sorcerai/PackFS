@@ -63,12 +63,12 @@ export class BrotliStrategy extends CompressionStrategy {
     return result;
   }
   
-  createDecompressor(chunk: CompressedChunk): NodeJS.ReadableStream {
+  createDecompressor(_chunk: CompressedChunk): NodeJS.ReadableStream {
     const decompressor = zlib.createBrotliDecompress();
     return decompressor;
   }
   
-  estimateRatio(data: Buffer, hints: CompressionHints): number {
+  estimateRatio(_data: Buffer, hints: CompressionHints): number {
     // Brotli performs exceptionally well on text data
     if (this.isTextFile(hints.mimeType)) {
       return this.dictionary ? 0.15 : 0.25; // 85% or 75% compression

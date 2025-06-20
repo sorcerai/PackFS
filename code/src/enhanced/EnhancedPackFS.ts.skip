@@ -5,10 +5,12 @@
  * and intelligent compression to existing PackFS implementations.
  */
 
-import { FakeFS, PortablePath, ZipFS } from '@yarnpkg/fslib';
-import { SemanticSearchEngine, SemanticSearchOptions, SemanticSearchResult } from './SemanticSearchAPI';
-import { HybridStorageStrategy, StorageTierConfig } from './HybridStorageStrategy';
-import { CompressionEngine, CompressionProfile } from './CompressionEngine';
+import { FakeFS, PortablePath } from '@yarnpkg/fslib';
+import { ZipFS } from '@yarnpkg/libzip';
+import { SemanticSearchEngine, SemanticSearchOptions, SemanticSearchResult } from '../semantic/SemanticSearchAPI';
+import { HybridStorageStrategy, StorageTierConfig } from '../storage/HybridStorageStrategy';
+import { CompressionEngine, CompressionProfile } from '../compression/CompressionEngine';
+import { Logger, CategoryLogger } from '../core/logger';
 
 export interface PackFSExtensionConfig {
   enableSemanticSearch: boolean;
@@ -31,16 +33,19 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
   private storageStrategy?: HybridStorageStrategy;
   private baseFS: FakeFS<PortablePath>;
   private config: PackFSExtensionConfig;
+  private logger: CategoryLogger;
   
-  constructor(baseFS: FakeFS<PortablePath>, config: PackFSExtensionConfig = {}) {
+  constructor(baseFS: FakeFS<PortablePath>, config: Partial<PackFSExtensionConfig> = {}) {
     super();
     this.baseFS = baseFS;
     this.config = {
       enableSemanticSearch: true,
       enableIntelligentCompression: true,
       ...config
-    };
+    } as PackFSExtensionConfig;
+    this.logger = Logger.getInstance().createChildLogger('EnhancedPackFS');
     
+    this.logger.info('Initializing EnhancedPackFS', this.config);
     this.initializeExtensions();
   }
   
@@ -71,22 +76,30 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
    * Examples: "find OAuth discussions", "show error handling patterns"
    */
   async executeNaturalLanguage(query: string): Promise<SemanticSearchResult[]> {
+    this.logger.debug(`Executing natural language query: ${query}`);
     if (!this.semanticEngine) {
+      this.logger.error('Semantic search not enabled');
       throw new Error('Semantic search not enabled');
     }
     
-    return this.semanticEngine.executeNaturalLanguage(query);
+    const results = await this.semanticEngine.executeNaturalLanguage(query);
+    this.logger.info(`Natural language query completed`, { query, resultCount: results.length });
+    return results;
   }
   
   /**
    * Semantic search with options - Production API
    */
   async findFiles(options: SemanticSearchOptions & { semantic?: boolean }): Promise<SemanticSearchResult[]> {
+    this.logger.debug('Finding files', options);
     if (options.semantic && this.semanticEngine) {
-      return this.semanticEngine.semanticSearch(options);
+      const results = await this.semanticEngine.semanticSearch(options);
+      this.logger.info('Semantic search completed', { resultCount: results.length });
+      return results;
     }
     
     // Fallback to traditional search
+    this.logger.debug('Falling back to traditional search');
     return this.traditionalSearch(options.query);
   }
   
@@ -114,16 +127,20 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
    * Enhanced file reading with intelligent tier management
    */
   async readFilePromise(path: PortablePath, encoding?: BufferEncoding): Promise<any> {
+    this.logger.debug(`Reading file: ${path}`, { encoding });
     let content: Buffer;
     
     if (this.storageStrategy) {
       // Use intelligent storage strategy
+      this.logger.debug('Using storage strategy for read');
       content = await this.storageStrategy.readFile(path);
     } else {
       // Fallback to base filesystem
+      this.logger.debug('Using base filesystem for read');
       content = await this.baseFS.readFilePromise(path);
     }
     
+    this.logger.info(`File read successful: ${path}`, { size: content.length });
     return encoding ? content.toString(encoding) : content;
   }
   
@@ -132,23 +149,32 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
    */
   async writeFilePromise(path: PortablePath, data: any): Promise<void> {
     const content = Buffer.isBuffer(data) ? data : Buffer.from(data);
+    this.logger.debug(`Writing file: ${path}`, { size: content.length });
     
     if (this.storageStrategy) {
+      this.logger.debug('Using storage strategy for write');
       await this.storageStrategy.writeFile(path, content);
     } else {
+      this.logger.debug('Using base filesystem for write');
       await this.baseFS.writeFilePromise(path, content);
     }
+    
+    this.logger.info(`File write successful: ${path}`, { size: content.length });
   }
   
   /**
    * Optimize storage tiers - Production maintenance task
    */
   async optimizeStorage(): Promise<any> {
+    this.logger.info('Starting storage optimization');
     if (!this.storageStrategy) {
+      this.logger.error('Intelligent compression not enabled');
       throw new Error('Intelligent compression not enabled');
     }
     
-    return this.storageStrategy.optimizeTiers();
+    const result = await this.storageStrategy.optimizeTiers();
+    this.logger.info('Storage optimization completed', result);
+    return result;
   }
   
   /**
@@ -278,6 +304,7 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
   
   private initializeExtensions(): void {
     if (this.config.enableSemanticSearch) {
+      this.logger.info('Initializing semantic search engine');
       this.semanticEngine = new SemanticSearchEngine(this.baseFS, {
         embeddingModel: this.config.semanticSearch?.embeddingModel || 'sentence-transformers/all-MiniLM-L6-v2',
         cacheSize: this.config.semanticSearch?.cacheSize || 1000,
@@ -286,6 +313,7 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
     }
     
     if (this.config.enableIntelligentCompression) {
+      this.logger.info('Initializing intelligent compression');
       const compressionEngine = this.config.compression ? 
         new CompressionEngine(this.config.compression) : undefined;
       
@@ -321,7 +349,7 @@ export class EnhancedPackFS extends FakeFS<PortablePath> {
         }
       }
     } catch (error) {
-      console.warn('Traditional search failed:', error);
+      this.logger.warn('Traditional search failed', { error });
     }
     
     return results;

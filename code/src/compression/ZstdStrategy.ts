@@ -1,8 +1,8 @@
 import { CompressionStrategy, CompressionHints, CompressedChunk } from './CompressionStrategy';
+import { compress as zstdCompress, decompress as zstdDecompress } from '@mongodb-js/zstd';
 
 /**
- * Mock Zstd strategy implementation - would use actual zstd bindings in production
- * Zstd provides excellent balance between compression ratio and speed
+ * Zstd compression strategy - provides excellent balance between compression ratio and speed
  */
 export class ZstdStrategy extends CompressionStrategy {
   readonly name = 'zstd';
@@ -19,18 +19,17 @@ export class ZstdStrategy extends CompressionStrategy {
   async compress(data: Buffer, hints: CompressionHints): Promise<CompressedChunk> {
     const startTime = performance.now();
     
-    // In real implementation, this would use actual zstd compression
-    // For demo purposes, we'll simulate the compression
+    // Use real Zstd compression
     const level = this.getCompressionLevel(hints);
-    const mockCompressed = this.simulateZstdCompression(data, level);
+    const compressed = await zstdCompress(data, level);
     
     const compressionTime = performance.now() - startTime;
     
     return {
-      data: mockCompressed,
+      data: compressed,
       algorithm: this.name,
       originalSize: data.length,
-      compressedSize: mockCompressed.length,
+      compressedSize: compressed.length,
       metadata: {
         compressionTime,
         level,
@@ -42,8 +41,8 @@ export class ZstdStrategy extends CompressionStrategy {
   async decompress(chunk: CompressedChunk): Promise<Buffer> {
     const startTime = performance.now();
     
-    // In real implementation, this would use actual zstd decompression
-    const result = this.simulateZstdDecompression(chunk.data);
+    // Use real Zstd decompression
+    const result = await zstdDecompress(chunk.data);
     
     const decompressionTime = performance.now() - startTime;
     (chunk.metadata as any).decompressionTime = decompressionTime;
@@ -52,18 +51,22 @@ export class ZstdStrategy extends CompressionStrategy {
   }
   
   createDecompressor(chunk: CompressedChunk): NodeJS.ReadableStream {
-    // In real implementation, return zstd streaming decompressor
     const { Readable } = require('stream');
     return new Readable({
-      read() {
-        // Mock streaming decompression
-        this.push(chunk.data);
-        this.push(null);
+      async read() {
+        try {
+          // Use real Zstd decompression
+          const decompressed = await zstdDecompress(chunk.data);
+          this.push(decompressed);
+          this.push(null);
+        } catch (error) {
+          this.emit('error', error);
+        }
       }
     });
   }
   
-  estimateRatio(data: Buffer, hints: CompressionHints): number {
+  estimateRatio(_data: Buffer, hints: CompressionHints): number {
     if (this.isStructuredData(hints.mimeType)) {
       return 0.2; // 80% compression for JSON, config files
     }
@@ -122,36 +125,4 @@ export class ZstdStrategy extends CompressionStrategy {
            mimeType.includes('go');
   }
   
-  // Mock compression simulation - replace with actual zstd in production
-  private simulateZstdCompression(data: Buffer, level: number): Buffer {
-    // Simulate compression by creating a smaller buffer with compression metadata
-    const compressionRatio = Math.max(0.1, 0.8 - (level * 0.05));
-    const compressedSize = Math.floor(data.length * compressionRatio);
-    
-    const compressed = Buffer.alloc(compressedSize + 8);
-    compressed.writeUInt32LE(data.length, 0); // Original size
-    compressed.writeUInt32LE(level, 4); // Compression level
-    
-    // Fill with mock compressed data (first bytes of original)
-    data.copy(compressed, 8, 0, Math.min(data.length, compressedSize));
-    
-    return compressed;
-  }
-  
-  private simulateZstdDecompression(data: Buffer): Buffer {
-    // Extract original size from mock compressed data
-    const originalSize = data.readUInt32LE(0);
-    const result = Buffer.alloc(originalSize);
-    
-    // Mock decompression - copy available data and fill rest
-    const availableData = data.subarray(8);
-    availableData.copy(result, 0);
-    
-    // Fill remaining bytes with pattern (in real implementation, this would be actual decompressed data)
-    for (let i = availableData.length; i < originalSize; i++) {
-      result[i] = availableData[i % availableData.length];
-    }
-    
-    return result;
-  }
 }

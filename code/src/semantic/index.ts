@@ -24,3 +24,6 @@ export {
 
 // All types
 export * from './types.js';
+
+// Semantic Search API
+// export { SemanticSearchEngine, SemanticSearchOptions, SemanticSearchResult, NaturalLanguageQuery } from './SemanticSearchAPI.js'; // Temporarily disabled due to missing dependencies
