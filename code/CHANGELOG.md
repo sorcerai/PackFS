@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.16] - 2025-06-20
+
+### Added
+- Convenience `createFileSystem()` function for simple one-line initialization
+- Comprehensive migration guide (MIGRATION.md) for upgrading from v0.1.8
+- Semantic API usage examples highlighting natural language operations
+- LLM tool integration examples showing how to use PackFS with AI agents
+- Release automation script with proper commit ordering
+
+### Changed
+- Updated README to emphasize natural language API as the primary interface
+- Improved release process to prevent commits after tagging
+- Converted build scripts to ES module syntax
+
+### Fixed
+- Test client reported issues: missing convenience initialization function
+- Documentation now clearly shows semantic API is the primary interface
+- Release script now handles ignored package-lock.json gracefully
+
+
 ## [0.1.13] - 2025-06-19
 
 ### Fixed

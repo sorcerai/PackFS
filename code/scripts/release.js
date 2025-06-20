@@ -140,7 +140,18 @@ async function main() {
     if (changelogUpdated) {
       runCommand('git add CHANGELOG.md', 'Staging CHANGELOG');
     }
-    runCommand('git add package.json package-lock.json', 'Staging package files');
+    runCommand('git add package.json', 'Staging package.json');
+    
+    // Try to add package-lock.json if it exists and isn't ignored
+    try {
+      if (fs.existsSync(path.join(__dirname, '..', 'package-lock.json'))) {
+        execSync('git add package-lock.json', { stdio: 'pipe' });
+        console.log('✅ Staged package-lock.json');
+      }
+    } catch (error) {
+      // package-lock.json might be ignored, which is fine
+      console.log('ℹ️  package-lock.json is ignored or doesn\'t exist');
+    }
     runCommand(
       `git commit -m "Release v${newVersion}: Update CHANGELOG and version number"`,
       'Committing release'
