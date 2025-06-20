@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20] - 2025-06-20
+
+### Fixed
+- **Critical: TypeError in keywordMap indexing** - Fixed "includes is not a function" error when loading corrupted indexes
+  - Added validation when loading indexes from disk to ensure keywordMap entries are arrays
+  - Added defensive checks in addToKeywordMap and removeFromKeywordMap methods
+  - Prevents indexing failures when semantic index becomes corrupted
+  - Added comprehensive tests to verify the fix
+
 ## [0.1.19] - 2025-06-20
 
 ### Fixed

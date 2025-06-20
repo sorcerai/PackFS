@@ -468,6 +468,16 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
         return;
       }
 
+      // Validate and fix keywordMap structure
+      if (loadedIndex.keywordMap) {
+        for (const keyword in loadedIndex.keywordMap) {
+          if (!Array.isArray(loadedIndex.keywordMap[keyword])) {
+            this.logger.warn(`Fixing non-array keywordMap entry for keyword: ${keyword}`);
+            loadedIndex.keywordMap[keyword] = [];
+          }
+        }
+      }
+      
       this.index = loadedIndex;
     } catch (error) {
       // Index doesn't exist or is corrupted, create new one
@@ -802,6 +812,11 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       if (!this.index.keywordMap[keyword]) {
         this.index.keywordMap[keyword] = [];
       }
+      // Defensive check to ensure it's an array
+      if (!Array.isArray(this.index.keywordMap[keyword])) {
+        this.logger.warn(`Converting non-array keywordMap entry to array for keyword: ${keyword}`);
+        this.index.keywordMap[keyword] = [];
+      }
       if (!this.index.keywordMap[keyword].includes(filePath)) {
         this.index.keywordMap[keyword].push(filePath);
       }
@@ -811,6 +826,12 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   private removeFromKeywordMap(filePath: string, keywords: string[]): void {
     for (const keyword of keywords) {
       if (this.index.keywordMap[keyword]) {
+        // Defensive check to ensure it's an array
+        if (!Array.isArray(this.index.keywordMap[keyword])) {
+          this.logger.warn(`Skipping removal from non-array keywordMap entry for keyword: ${keyword}`);
+          delete this.index.keywordMap[keyword];
+          continue;
+        }
         const index = this.index.keywordMap[keyword].indexOf(filePath);
         if (index > -1) {
           this.index.keywordMap[keyword].splice(index, 1);
