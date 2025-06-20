@@ -2,7 +2,7 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/tests'],
   testMatch: ['**/__tests__/**/*.ts', '**/*.{test,spec}.ts'],
   testPathIgnorePatterns: ['/node_modules/', '/__tests__.pending/', '/__tests__/integration.disabled/'],
   moduleNameMapper: {

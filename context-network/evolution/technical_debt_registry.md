@@ -34,7 +34,7 @@ This registry organizes technical debt items in multiple ways to help you find r
 
 | ID | Title | Type | Priority | Area | Suggested Timeframe |
 |----|-------|------|----------|------|---------------------|
-| *None yet* |
+| TD001 | [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) | Code/Architecture | High | Enhanced Features | Q1 2025 |
 
 ### Technical Debt by Priority
 
@@ -42,7 +42,7 @@ This registry organizes technical debt items in multiple ways to help you find r
 - *None yet*
 
 #### High
-- *None yet*
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - EnhancedPackFS compatibility issues prevent full feature set
 
 #### Medium
 - *None yet*
@@ -52,19 +52,19 @@ This registry organizes technical debt items in multiple ways to help you find r
 
 ### Technical Debt by Area
 
-#### Component 1
-- *None yet*
+#### Enhanced Features (Semantic Search & Compression)
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - EnhancedPackFS and compression integration
 
-#### Component 2
+#### Core Features
 - *None yet*
 
 ### Technical Debt by Type
 
 #### Architecture Debt
-- *None yet*
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - FakeFS inheritance issues
 
 #### Code Debt
-- *None yet*
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - Missing abstract method implementations
 
 #### Test Debt
 - *None yet*
@@ -81,10 +81,10 @@ This registry organizes technical debt items in multiple ways to help you find r
 ### Technical Debt by Impact
 
 #### Performance Impact
-- *None yet*
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - Mock compression reduces efficiency
 
 #### Maintainability Impact
-- *None yet*
+- TD001: [Logging Implementation Debt](../technical-debt/2025-06-20-logging-implementation.md) - Incomplete FakeFS implementation blocks updates
 
 #### Reliability Impact
 - *None yet*
@@ -137,9 +137,10 @@ This section tracks debt items that have been fully addressed, serving as a reco
 - **Update Patterns:** This document should be updated whenever a new debt item is added or an existing item's status changes
 
 ## Metadata
-- **Created:** [Date]
-- **Last Updated:** [Date]
-- **Updated By:** [Role/Agent]
+- **Created:** 2025-06-20
+- **Last Updated:** 2025-06-20
+- **Updated By:** Development Team
 
 ## Change History
-- [Date]: Initial creation of technical debt registry
+- 2025-06-20: Initial creation of technical debt registry
+- 2025-06-20: Added TD001 - Logging Implementation Debt

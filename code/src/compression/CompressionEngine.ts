@@ -184,7 +184,7 @@ export class CompressionEngine {
       strategyUsage: {}
     };
     
-    for (const [algorithm, algorithmStats] of this.compressionStats) {
+    for (const [algorithm, algorithmStats] of Array.from(this.compressionStats)) {
       stats.totalCompressions += algorithmStats.compressionCount;
       stats.totalBytesProcessed += algorithmStats.totalOriginalSize;
       stats.totalBytesSaved += algorithmStats.totalOriginalSize - algorithmStats.totalCompressedSize;
