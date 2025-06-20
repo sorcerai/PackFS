@@ -19,12 +19,24 @@ npm install packfs-core
 
 ## Quick Start
 
+### ⚠️ IMPORTANT: Required Parameters
+
+**The `workingDirectory` parameter is REQUIRED** when initializing PackFS tools. Without it, you will encounter the error:
+```
+"Filesystem is not initialized. Please provide a valid filesystem or workingDirectory."
+```
+
+### Basic Usage
+
 ```typescript
 import { createMastraSemanticToolSuite } from 'packfs-core/mastra';
 
 // Initialize the PackFS tools
+// IMPORTANT: workingDirectory is REQUIRED - must be an absolute path
 const packfsTools = createMastraSemanticToolSuite({
-  workingDirectory: '/path/to/your/files',
+  workingDirectory: '/path/to/your/files', // REQUIRED!
+  // OR provide a pre-configured filesystem:
+  // filesystem: new DiskSemanticBackend('/path/to/files'),
 });
 
 // Use the tools
@@ -38,6 +50,25 @@ if (result.success) {
 } else {
   console.error('Error:', result.error);
 }
+```
+
+### Single Tool Pattern
+
+For a unified semantic filesystem tool:
+
+```typescript
+import { createMastraSemanticFilesystemTool } from 'packfs-core';
+
+// IMPORTANT: workingDirectory is REQUIRED
+const packfsTool = createMastraSemanticFilesystemTool({
+  workingDirectory: process.cwd(), // Use current directory
+  // OR: workingDirectory: '/absolute/path/to/project',
+});
+
+// Use with natural language
+const result = await packfsTool.execute({
+  naturalLanguageQuery: 'read the configuration file'
+});
 ```
 
 ## Available Tools

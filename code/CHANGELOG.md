@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.19] - 2025-06-20
+
+### Fixed
+- **Critical: Recursive directory indexing bug** - Fixed infinite recursion in DiskSemanticBackend that prevented initialization in real-world projects
+  - Added protection against circular symlinks by tracking visited paths
+  - Implemented maximum depth limit (10 levels) to prevent stack overflow
+  - Added exclusion list for common large directories (node_modules, .git, .svn, dist, build, etc.)
+  - All recursive methods now have proper termination conditions
+  - Added comprehensive tests for deep directories and excluded paths
+
+### Improved
+- **Documentation for initialization requirements** - Added clear documentation about required parameters
+  - Updated README.md with prominent notes about required `workingDirectory` parameter
+  - Enhanced Mastra integration README with initialization warnings and examples
+  - Created comprehensive Getting Started guide (docs/GETTING_STARTED.md)
+  - Improved error messages to provide helpful initialization guidance
+  - Added multiple initialization pattern examples for common use cases
+
 ## [0.1.18] - 2025-06-20
 
 ### Added

@@ -102,17 +102,44 @@ const files = await fs.readdir('.');
 
 #### Mastra (Native Integration)
 
-PackFS provides native Mastra integration with a tool factory pattern that reduces boilerplate from 160+ lines to under 20:
+PackFS provides native Mastra integration with two patterns:
+
+**Option 1: Semantic Filesystem Tool (Recommended)**
+
+```typescript
+import { createMastraSemanticFilesystemTool } from 'packfs-core';
+
+// Create a unified semantic filesystem tool
+// IMPORTANT: workingDirectory is REQUIRED
+const packfsTool = createMastraSemanticFilesystemTool({
+  workingDirectory: '/path/to/your/project', // REQUIRED - must be an absolute path
+  // OR provide a pre-configured filesystem:
+  // filesystem: new DiskSemanticBackend('/path/to/project'),
+  security: {
+    maxFileSize: 5 * 1024 * 1024, // 5MB limit
+    allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
+    forbiddenPaths: ['node_modules', '.git', '.env']
+  }
+});
+
+// Use with Mastra agents
+const agent = new Agent({
+  name: 'file-assistant',
+  tools: { packfsTool }
+});
+```
+
+**Option 2: Tool Suite Pattern**
 
 ```typescript
 import { createPackfsTools } from 'packfs-core/integrations/mastra';
 
-// Create tools with minimal configuration
+// Create separate tools for different operations
 const tools = createPackfsTools({
-  rootPath: '/project',
+  rootPath: '/project', // REQUIRED - resolves to workingDirectory
   permissions: ['read', 'write', 'search'],
   security: {
-    maxFileSize: 5 * 1024 * 1024, // 5MB limit
+    maxFileSize: 5 * 1024 * 1024,
     allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
     blockedPaths: ['node_modules', '.git']
   }

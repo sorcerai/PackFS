@@ -59,6 +59,29 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   private readonly indexVersion = '1.0.0';
   private readonly logger: CategoryLogger;
 
+  private readonly excludedDirectories = new Set([
+    'node_modules',
+    '.git',
+    '.svn',
+    '.hg',
+    '.DS_Store',
+    'dist',
+    'build',
+    'coverage',
+    '.next',
+    '.nuxt',
+    '.cache',
+    'vendor',
+    'bower_components',
+    '__pycache__',
+    '.pytest_cache',
+    '.mypy_cache',
+    '.tox',
+    '.packfs' // Exclude our own directory
+  ]);
+  private readonly maxIndexingDepth = 10; // Maximum directory depth to prevent stack overflow
+  private visitedPaths = new Set<string>(); // Track visited paths to prevent cycles
+
   constructor(basePath: string, config?: Partial<SemanticConfig>) {
     super(config);
     this.basePath = basePath;
@@ -467,18 +490,45 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       keywordMap: {},
     };
 
-    // Recursively index all files
-    await this.indexDirectory(this.basePath);
+    // Reset visited paths before indexing
+    this.visitedPaths.clear();
+
+    // Recursively index all files with depth tracking
+    await this.indexDirectory(this.basePath, 0);
     await this.saveIndex();
   }
 
-  private async indexDirectory(dirPath: string): Promise<void> {
+  private async indexDirectory(dirPath: string, depth: number = 0): Promise<void> {
     try {
+      // Check depth limit
+      if (depth >= this.maxIndexingDepth) {
+        this.logger.warn(`Skipping directory due to depth limit: ${dirPath}`);
+        return;
+      }
+
+      // Get real path to handle symlinks
+      const realPath = await fs.realpath(dirPath);
+      
+      // Check if we've already visited this path (handles circular symlinks)
+      if (this.visitedPaths.has(realPath)) {
+        this.logger.debug(`Skipping already visited directory: ${dirPath}`);
+        return;
+      }
+      
+      // Mark as visited
+      this.visitedPaths.add(realPath);
+
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
       for (const entry of entries) {
         const fullPath = join(dirPath, entry.name);
         const relativePath = relative(this.basePath, fullPath);
+
+        // Skip excluded directories
+        if (entry.isDirectory() && this.excludedDirectories.has(entry.name)) {
+          this.logger.debug(`Skipping excluded directory: ${entry.name}`);
+          continue;
+        }
 
         // Skip .packfs directory
         if (relativePath.startsWith('.packfs')) {
@@ -486,13 +536,13 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
         }
 
         if (entry.isDirectory()) {
-          await this.indexDirectory(fullPath);
+          await this.indexDirectory(fullPath, depth + 1);
         } else if (entry.isFile()) {
           await this.updateFileIndex(relativePath);
         }
       }
     } catch (error) {
-      console.warn(`Failed to index directory ${dirPath}:`, error);
+      this.logger.warn(`Failed to index directory ${dirPath}:`, error);
     }
   }
 
@@ -502,19 +552,31 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     const needsUpdate = await this.hasModificationsSince(this.basePath, lastUpdate);
 
     if (needsUpdate) {
-      console.log('Updating semantic index...');
-      await this.indexDirectory(this.basePath);
+      this.logger.info('Updating semantic index...');
+      // Reset visited paths before re-indexing
+      this.visitedPaths.clear();
+      await this.indexDirectory(this.basePath, 0);
       await this.saveIndex();
     }
   }
 
-  private async hasModificationsSince(dirPath: string, since: Date): Promise<boolean> {
+  private async hasModificationsSince(dirPath: string, since: Date, depth: number = 0): Promise<boolean> {
     try {
+      // Prevent deep recursion
+      if (depth >= this.maxIndexingDepth) {
+        return false;
+      }
+
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
 
       for (const entry of entries) {
         const fullPath = join(dirPath, entry.name);
         const relativePath = relative(this.basePath, fullPath);
+
+        // Skip excluded directories
+        if (entry.isDirectory() && this.excludedDirectories.has(entry.name)) {
+          continue;
+        }
 
         if (relativePath.startsWith('.packfs')) continue;
 
@@ -525,7 +587,7 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
         }
 
         if (entry.isDirectory()) {
-          if (await this.hasModificationsSince(fullPath, since)) {
+          if (await this.hasModificationsSince(fullPath, since, depth + 1)) {
             return true;
           }
         }

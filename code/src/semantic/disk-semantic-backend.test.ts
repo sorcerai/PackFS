@@ -85,6 +85,74 @@ describe('DiskSemanticBackend', () => {
       
       await newBackend.cleanup();
     });
+
+    it('should skip excluded directories like node_modules', async () => {
+      // Create a node_modules directory with files
+      await fs.mkdir(join(testDir, 'node_modules'), { recursive: true });
+      await fs.mkdir(join(testDir, 'node_modules', 'package1'), { recursive: true });
+      await fs.writeFile(join(testDir, 'node_modules', 'package1', 'index.js'), 'module.exports = {}');
+      
+      // Create a .git directory
+      await fs.mkdir(join(testDir, '.git'), { recursive: true });
+      await fs.writeFile(join(testDir, '.git', 'config'), '[core] repositoryformatversion = 0');
+      
+      // Create regular files
+      await fs.writeFile(join(testDir, 'app.js'), 'const app = require("express")();');
+      await fs.writeFile(join(testDir, 'README.md'), '# Test Project');
+      
+      const newBackend = new DiskSemanticBackend(testDir);
+      await newBackend.initialize();
+      
+      // Use find to search all indexed files (not list which shows raw directory contents)
+      const result = await newBackend.discoverFiles({
+        purpose: 'find',
+        target: { pattern: '*' }
+      });
+      
+      expect(result.success).toBe(true);
+      expect(result.files).toBeDefined();
+      
+      // Verify that files in node_modules and .git are not indexed
+      const filePaths = result.files.map(f => f.path);
+      const nodeModulesFiles = filePaths.filter(p => p.includes('node_modules'));
+      const gitFiles = filePaths.filter(p => p.includes('.git'));
+      
+      expect(nodeModulesFiles).toHaveLength(0);
+      expect(gitFiles).toHaveLength(0);
+      
+      // Verify regular files are indexed
+      expect(filePaths).toContain('app.js');
+      expect(filePaths).toContain('README.md');
+      
+      await newBackend.cleanup();
+    });
+
+    it('should handle deep directory structures without stack overflow', async () => {
+      // Create a deep directory structure
+      let deepPath = testDir;
+      for (let i = 0; i < 15; i++) {
+        deepPath = join(deepPath, `level${i}`);
+        await fs.mkdir(deepPath, { recursive: true });
+        await fs.writeFile(join(deepPath, `file${i}.txt`), `Content at level ${i}`);
+      }
+      
+      const newBackend = new DiskSemanticBackend(testDir);
+      
+      // This should not throw a stack overflow error
+      await expect(newBackend.initialize()).resolves.not.toThrow();
+      
+      // Verify some files were indexed but not the deepest ones
+      const result = await newBackend.discoverFiles({
+        purpose: 'find',
+        target: { pattern: '**/file*.txt' }
+      });
+      
+      expect(result.success).toBe(true);
+      expect(result.files.length).toBeGreaterThan(0);
+      expect(result.files.length).toBeLessThan(15); // Should stop before reaching all levels
+      
+      await newBackend.cleanup();
+    });
   });
 
   describe('File Access Operations', () => {

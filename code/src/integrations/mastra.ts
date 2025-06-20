@@ -250,7 +250,13 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
     // Ensure filesystem is initialized
     if (!config.filesystem) {
       throw new Error(
-        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+        'PackFS Error: Filesystem is not initialized. ' +
+        'You must provide either:\n' +
+        '1. workingDirectory: an absolute path to your project directory\n' +
+        '   Example: { workingDirectory: "/path/to/project" }\n' +
+        '2. filesystem: a pre-initialized filesystem instance\n' +
+        '   Example: { filesystem: new DiskSemanticBackend("/path/to/project") }\n\n' +
+        'For more details, see: https://github.com/jwynia/PackFS/blob/main/docs/GETTING_STARTED.md'
       );
     }
 
@@ -318,7 +324,13 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
     // Ensure filesystem is initialized
     if (!config.filesystem) {
       throw new Error(
-        'Filesystem is not initialized. Please provide a valid filesystem or workingDirectory.'
+        'PackFS Error: Filesystem is not initialized. ' +
+        'You must provide either:\n' +
+        '1. workingDirectory: an absolute path to your project directory\n' +
+        '   Example: { workingDirectory: "/path/to/project" }\n' +
+        '2. filesystem: a pre-initialized filesystem instance\n' +
+        '   Example: { filesystem: new DiskSemanticBackend("/path/to/project") }\n\n' +
+        'For more details, see: https://github.com/jwynia/PackFS/blob/main/docs/GETTING_STARTED.md'
       );
     }
 
