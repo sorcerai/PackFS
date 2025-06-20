@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.18] - 2025-06-20
+
+### Added
+- Semantic search API with intelligent compression integration
+- Compression strategies module with support for Brotli, LZ4, and Zstandard
+- Storage strategies module for hybrid storage implementations
+- Enhanced filesystem module with advanced features
+- Benchmarking scripts and performance testing infrastructure
+- Comprehensive logging system integration across all components
+
+### Changed
+- Reorganized codebase structure with dedicated modules for compression, storage, and enhanced features
+- Moved SemanticSearchAPI to semantic module for better organization
+- Updated module exports to include new compression and storage modules
+
+### Fixed
+- TypeScript compilation errors in enhanced modules
+- Module organization for better maintainability
+
 ## [0.1.17] - 2025-06-20
 
 ### Added
