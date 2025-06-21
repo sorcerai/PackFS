@@ -3,6 +3,7 @@
  * Implements the semantic interface using in-memory storage with vector indexing simulation
  */
 
+import { dirname } from 'path';
 import { SemanticFileSystemInterface } from './interface.js';
 import {
   FileAccessIntent,
@@ -369,10 +370,25 @@ export class MemorySemanticBackend extends SemanticFileSystemInterface {
         };
       }
 
+      // Generate error recovery suggestions for memory backend
+      const dirContents = this.getDirectoryContents(filePath);
+      const suggestions = [{
+        type: 'directory_listing' as const,
+        description: `Available files in memory backend`,
+        data: {
+          directory: dirname(filePath) || '.',
+          files: dirContents.slice(0, 20),
+          totalFiles: dirContents.length,
+          hasMore: dirContents.length > 20
+        },
+        confidence: 0.9
+      }];
+      
       return {
         success: false,
         exists: false,
-        message: `File not found: ${filePath}`
+        message: `File not found: ${filePath}`,
+        suggestions
       };
     }
 
@@ -881,5 +897,36 @@ export class MemorySemanticBackend extends SemanticFileSystemInterface {
         }
       }
     }
+  }
+
+  private getDirectoryContents(requestedPath: string): Array<{name: string, isDirectory: boolean}> {
+    const dirPath = dirname(requestedPath) || '.';
+    const files: Array<{name: string, isDirectory: boolean}> = [];
+    
+    // List all files and infer directories
+    const dirs = new Set<string>();
+    
+    for (const [path] of this.files) {
+      // Check if file is in or under the requested directory
+      if (path.startsWith(dirPath)) {
+        const relativePath = path.slice(dirPath.length).replace(/^\//, '');
+        const parts = relativePath.split('/');
+        
+        if (parts.length === 1 && parts[0]) {
+          // Direct file in this directory
+          files.push({ name: parts[0], isDirectory: false });
+        } else if (parts.length > 1 && parts[0]) {
+          // Subdirectory
+          dirs.add(parts[0]);
+        }
+      }
+    }
+    
+    // Add directories
+    for (const dir of dirs) {
+      files.push({ name: dir, isDirectory: true });
+    }
+    
+    return files.sort((a, b) => a.name.localeCompare(b.name));
   }
 }

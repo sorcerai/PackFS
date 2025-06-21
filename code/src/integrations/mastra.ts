@@ -93,16 +93,29 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
           // Check if the semantic operation was successful
           const success = result.success !== false;
 
-          return {
+          // Flatten the result structure for LLM compatibility
+          // LLMs expect direct access to properties like content, exists, files, etc.
+          const flatResult: ToolResult = {
             success,
-            data: result,
             error: success ? undefined : result.message || 'Operation failed',
+            // Spread the result object to flatten nested properties
+            ...(success && result ? result : {}),
+            // Preserve metadata but enhance it with execution info
             metadata: {
+              ...(result?.metadata || {}),
               executionTime: Date.now() - startTime,
               filesAccessed,
               operationType: params.operation || 'natural_language',
             },
           };
+          
+          // Remove any duplicate 'success' property from spreading
+          if ('success' in flatResult && flatResult.success === success) {
+            delete (flatResult as any).success;
+            flatResult.success = success;
+          }
+          
+          return flatResult;
         } catch (error) {
           return {
             success: false,
@@ -459,14 +472,7 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               naturalLanguageQuery: inputParams.query,
             });
 
-            // Ensure consistent response structure
-            if (result.success && result.data) {
-              return {
-                success: true,
-                ...result.data,
-                metadata: result.metadata,
-              };
-            }
+            // The base adapter already flattens, but keep consistent with other methods
             return result;
           } else {
             // Handle different parameter formats
@@ -493,12 +499,12 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
             });
 
             // Ensure consistent response structure and include content field
-            if (result.success && result.data) {
+            if (result.success) {
               return {
                 success: true,
-                exists: result.data.exists,
-                content: result.data.content,
-                metadata: result.data.metadata,
+                exists: result.exists,
+                content: result.content,
+                metadata: result.metadata,
                 executionMetadata: result.metadata,
               };
             }
@@ -559,14 +565,7 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               naturalLanguageQuery: inputParams.query,
             });
 
-            // Ensure consistent response structure
-            if (result.success && result.data) {
-              return {
-                success: true,
-                ...result.data,
-                metadata: result.metadata,
-              };
-            }
+            // The base adapter already flattens, but keep consistent with other methods
             return result;
           } else {
             // Handle different parameter formats
@@ -606,12 +605,9 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
             });
 
             // Ensure consistent response structure
-            if (result.success && result.data) {
-              return {
-                success: true,
-                ...result.data,
-                metadata: result.metadata,
-              };
+            if (result.success) {
+              // Result is already flattened by base adapter
+              return result;
             }
             return result;
           }
@@ -666,13 +662,13 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               naturalLanguageQuery: inputParams.query,
             });
 
-            // Ensure consistent response structure
-            if (result.success && result.data) {
+            // The base adapter already flattens, so check top-level properties
+            if (result.success) {
               return {
                 success: true,
-                results: result.data.files || result.data.results || [],
-                totalFound: result.data.totalFound || 0,
-                searchTime: result.data.searchTime || 0,
+                results: result.files || result.results || [],
+                totalFound: result.totalFound || 0,
+                searchTime: result.searchTime || 0,
                 metadata: result.metadata,
               };
             }
@@ -698,12 +694,12 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
             });
 
             // Fix response structure: convert 'files' to 'results' and ensure proper structure
-            if (result.success && result.data) {
+            if (result.success) {
               return {
                 success: true,
-                results: result.data.files || result.data.results || [],
-                totalFound: result.data.totalFound || 0,
-                searchTime: result.data.searchTime || 0,
+                results: result.files || result.results || [],
+                totalFound: result.totalFound || 0,
+                searchTime: result.searchTime || 0,
                 metadata: result.metadata,
               };
             }
@@ -765,14 +761,7 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               naturalLanguageQuery: inputParams.query,
             });
 
-            // Ensure consistent response structure
-            if (result.success && result.data) {
-              return {
-                success: true,
-                ...result.data,
-                metadata: result.metadata,
-              };
-            }
+            // The base adapter already flattens, but keep consistent with other methods
             return result;
           } else {
             // Special handling for list operation which is actually a discover operation
@@ -792,12 +781,12 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               });
 
               // Fix response structure: convert 'files' to 'results' and ensure proper structure
-              if (result.success && result.data) {
+              if (result.success) {
                 return {
                   success: true,
-                  results: result.data.files || result.data.results || [],
-                  totalFound: result.data.totalFound || 0,
-                  searchTime: result.data.searchTime || 0,
+                  results: result.files || result.results || [],
+                  totalFound: result.totalFound || 0,
+                  searchTime: result.searchTime || 0,
                   metadata: result.metadata,
                 };
               }
@@ -884,12 +873,9 @@ export function createMastraSemanticToolSuite(config: MastraIntegrationConfig): 
               }
 
               // Ensure consistent response structure
-              if (result.data) {
-                return {
-                  success: true,
-                  ...result.data,
-                  metadata: result.metadata,
-                };
+              if (result.success) {
+                // Result is already flattened by base adapter
+                return result;
               }
               return result;
             } catch (error) {

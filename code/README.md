@@ -2,6 +2,8 @@
 
 Semantic filesystem operations for LLM agent frameworks with natural language understanding.
 
+FYI: This project is, in addition to its actual regular scope, one where I'm testing the use of LLM agents to manage a product AND another independent agent to build something using this package. Their back and forth may cause more feature churn than you're up for. You've been warned.
+
 ## Overview
 
 PackFS is a TypeScript/Node.js library that provides intelligent filesystem operations through semantic understanding and natural language processing. Built specifically for LLM agent frameworks, it replaces traditional POSIX-style operations with intent-based semantic operations that understand what agents want to accomplish.
@@ -35,24 +37,18 @@ import { createFileSystem } from 'packfs-core';
 const fs = createFileSystem('/workspace');
 
 // Natural language file operations - the primary interface for LLMs
-await fs.executeNaturalLanguage(
-  "Create a config.json file with default database settings"
-);
+await fs.executeNaturalLanguage('Create a config.json file with default database settings');
 
-await fs.executeNaturalLanguage(
-  "Find all documentation files and organize them in a docs folder"
-);
+await fs.executeNaturalLanguage('Find all documentation files and organize them in a docs folder');
 
 // Semantic search
 const results = await fs.findFiles('configuration files', {
   searchType: 'semantic',
-  maxResults: 5
+  maxResults: 5,
 });
 
 // The result includes interpreted intent and confidence
-const result = await fs.executeNaturalLanguage(
-  "Backup all JavaScript files modified today"
-);
+const result = await fs.executeNaturalLanguage('Backup all JavaScript files modified today');
 console.log(`Operation confidence: ${result.confidence}`);
 console.log(`Interpreted as: ${JSON.stringify(result.interpretedIntent)}`);
 ```
@@ -67,21 +63,21 @@ const backend = fs.getSemanticBackend();
 const configResult = await backend.accessFile({
   purpose: 'read',
   target: { path: 'config.json' },
-  preferences: { includeMetadata: true }
+  preferences: { includeMetadata: true },
 });
 
 // Semantic file discovery
 const docs = await backend.discoverFiles({
   purpose: 'search_semantic',
   target: { semanticQuery: 'API documentation' },
-  options: { maxResults: 10 }
+  options: { maxResults: 10 },
 });
 
 // Intelligent file organization
 await backend.organizeFiles({
   purpose: 'group_semantic',
   target: { directory: 'organized' },
-  criteria: 'Group files by their semantic purpose'
+  criteria: 'Group files by their semantic purpose',
 });
 ```
 
@@ -118,14 +114,14 @@ const packfsTool = createMastraSemanticFilesystemTool({
   security: {
     maxFileSize: 5 * 1024 * 1024, // 5MB limit
     allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
-    forbiddenPaths: ['node_modules', '.git', '.env']
-  }
+    forbiddenPaths: ['node_modules', '.git', '.env'],
+  },
 });
 
 // Use with Mastra agents
 const agent = new Agent({
   name: 'file-assistant',
-  tools: { packfsTool }
+  tools: { packfsTool },
 });
 ```
 
@@ -141,26 +137,26 @@ const tools = createPackfsTools({
   security: {
     maxFileSize: 5 * 1024 * 1024,
     allowedExtensions: ['.md', '.txt', '.json', '.js', '.ts'],
-    blockedPaths: ['node_modules', '.git']
-  }
+    blockedPaths: ['node_modules', '.git'],
+  },
 });
 
 // Use individual tools in your Mastra agent
 const fileContent = await tools.fileReader.execute({
   context: {
     purpose: 'read',
-    target: { path: '/project/README.md' }
+    target: { path: '/project/README.md' },
   },
-  runtimeContext // Mastra's runtime context
+  runtimeContext, // Mastra's runtime context
 });
 
 const searchResults = await tools.fileSearcher.execute({
   context: {
     purpose: 'search_content',
     target: { path: '/project' },
-    options: { pattern: 'API.*endpoint' }
+    options: { pattern: 'API.*endpoint' },
   },
-  runtimeContext
+  runtimeContext,
 });
 
 // Create new files with validation
@@ -168,15 +164,16 @@ await tools.fileWriter.execute({
   context: {
     purpose: 'create',
     target: { path: '/project/config.json' },
-    content: JSON.stringify({ database: { host: 'localhost' } })
+    content: JSON.stringify({ database: { host: 'localhost' } }),
   },
-  runtimeContext
+  runtimeContext,
 });
 ```
 
 **Semantic Operations**: The tools support intent-based operations:
+
 - **AccessIntent**: `read`, `metadata`, `exists`
-- **DiscoverIntent**: `list`, `search_content`, `search_semantic`  
+- **DiscoverIntent**: `list`, `search_content`, `search_semantic`
 - **UpdateIntent**: `create`, `update`, `append`, `delete`
 
 **Advanced Configuration**:
@@ -191,15 +188,15 @@ const tools = createPackfsTools({
     blockedPaths: ['node_modules', '.git', '.env', 'secrets'],
     rateLimiting: {
       maxRequests: 100,
-      windowMs: 60000 // 1 minute
-    }
+      windowMs: 60000, // 1 minute
+    },
   },
   semantic: {
     enableRelationships: true,
     chunkSize: 2000,
     overlapSize: 200,
-    relevanceThreshold: 0.5
-  }
+    relevanceThreshold: 0.5,
+  },
 });
 
 // Generated tools: fileReader, fileWriter, fileSearcher, fileLister
@@ -214,11 +211,11 @@ import { createLangChainSemanticFilesystemTool } from 'packfs-core';
 const tool = createLangChainSemanticFilesystemTool({
   filesystem: new MemorySemanticBackend(),
   workingDirectory: '/project',
-  langchain: { verbose: true }
+  langchain: { verbose: true },
 });
 
 // LangChain DynamicTool compatible
-const response = await tool.func("read the configuration file");
+const response = await tool.func('read the configuration file');
 console.log(response); // File content as string
 ```
 
@@ -229,13 +226,13 @@ import { createLlamaIndexSemanticFilesystemTool } from 'packfs-core';
 
 const tool = createLlamaIndexSemanticFilesystemTool({
   filesystem: new MemorySemanticBackend(),
-  workingDirectory: '/project'
+  workingDirectory: '/project',
 });
 
 // LlamaIndex FunctionTool compatible
 const result = await tool.call({
   action: 'search',
-  searchTerm: 'API documentation'
+  searchTerm: 'API documentation',
 });
 ```
 
@@ -249,8 +246,8 @@ const tool = createKaibanSemanticFilesystemTool({
   workingDirectory: '/shared',
   kaiban: {
     agentId: 'file-manager',
-    enableStatePersistence: true
-  }
+    enableStatePersistence: true,
+  },
 });
 
 // Multi-agent collaboration
@@ -260,8 +257,8 @@ const result = await tool.handler({
   content: 'Team meeting notes',
   collaboration: {
     shareWith: ['agent-001', 'agent-002'],
-    notifyAgents: true
-  }
+    notifyAgents: true,
+  },
 });
 ```
 
@@ -271,21 +268,21 @@ const result = await tool.handler({
 import { DiskSemanticBackend } from 'packfs-core';
 
 // Persistent semantic indexing
-const fs = new DiskSemanticBackend({ 
+const fs = new DiskSemanticBackend({
   rootPath: '/project',
-  indexPath: '.packfs/semantic-index.json'
+  indexPath: '.packfs/semantic-index.json',
 });
 
 // Find files by semantic meaning
 const configFiles = await fs.discoverFiles({
   purpose: 'search_semantic',
-  target: { semanticQuery: 'configuration and settings' }
+  target: { semanticQuery: 'configuration and settings' },
 });
 
 // Find files by content patterns
 const apiDocs = await fs.discoverFiles({
   purpose: 'search_content',
-  target: { pattern: 'API|endpoint|route' }
+  target: { pattern: 'API|endpoint|route' },
 });
 
 // Organize files by topic
@@ -293,9 +290,49 @@ const organized = await fs.organizeFiles({
   purpose: 'group_semantic',
   source: { path: '/project/docs' },
   destination: { path: '/project/organized' },
-  options: { groupBy: 'topic' }
+  options: { groupBy: 'topic' },
 });
 ```
+
+### Intelligent Error Recovery
+
+PackFS reduces LLM token usage by providing smart suggestions when file operations fail:
+
+```typescript
+// When a file is not found
+const result = await fs.accessFile({
+  purpose: 'read',
+  target: { path: 'context-network/foundation/index.md' },
+});
+
+if (!result.success) {
+  console.log(result.message);
+  // Output:
+  // File not found: context-network/foundation/index.md
+  //
+  // Suggestions:
+  // • Directory listing of 'context-network/foundation'
+  //   Files: core.md, principles.md, objectives.md ... and 3 more
+  // • Alternative paths that exist
+  //   Try: context-network/index.md
+  // • Found 'index.md' in other locations
+  //   Found in: docs/index.md, src/index.md
+}
+
+// When search returns no results
+const searchResult = await fs.discoverFiles({
+  purpose: 'search_content',
+  target: { semanticQuery: 'quantum blockchain AI' },
+});
+
+if (searchResult.files.length === 0 && searchResult.suggestions) {
+  // Suggestions include:
+  // - Alternative search terms
+  // - Individual term searches: 'quantum', 'blockchain', 'AI'
+}
+```
+
+This feature helps LLMs find what they're looking for without multiple retry attempts, significantly reducing API costs and improving response times.
 
 ## API Reference
 
@@ -324,11 +361,13 @@ const organized = await fs.organizeFiles({
 ### Framework Integrations
 
 #### Native Mastra Integration
+
 - `createPackfsTools(config)` - Native tool factory for Mastra agents
 - `MastraSecurityValidator` - Security validation with path restrictions and rate limiting
 - Intent-based schemas: `AccessIntent`, `DiscoverIntent`, `UpdateIntent`
 
-#### Legacy Framework Integrations  
+#### Legacy Framework Integrations
+
 - `createLangChainSemanticFilesystemTool` - LangChain.js integration
 - `createLlamaIndexSemanticFilesystemTool` - LlamaIndex.TS integration
 - `createKaibanSemanticFilesystemTool` - KaibanJS multi-agent integration

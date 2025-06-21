@@ -8,6 +8,15 @@ export interface SemanticOperationResult {
   readonly success: boolean;
   readonly message?: string;
   readonly metadata?: Record<string, unknown>;
+  readonly suggestions?: ErrorSuggestion[];
+}
+
+// Error recovery suggestions
+export interface ErrorSuggestion {
+  readonly type: 'directory_listing' | 'similar_files' | 'parent_directory' | 'alternative_path' | 'search_results';
+  readonly description: string;
+  readonly data: any;
+  readonly confidence: number;
 }
 
 // File targeting options - multiple ways to identify files

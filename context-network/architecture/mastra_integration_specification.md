@@ -608,6 +608,62 @@ export const tools = createPackfsTools({
 });
 ```
 
+### Output Structure Design
+
+#### LLM-Friendly Flat Structure
+
+All tool outputs follow a flat structure to ensure LLM compatibility:
+
+```typescript
+// Tool output structure
+interface ToolOutput {
+  success: boolean;
+  error?: string;
+  
+  // All data properties are at top level for direct LLM access
+  content?: string;      // File content for read operations
+  exists?: boolean;      // File existence check
+  created?: boolean;     // File creation status
+  files?: FileInfo[];    // Search/list results
+  totalFound?: number;   // Total count for search
+  searchTime?: number;   // Search performance metric
+  
+  // Only metadata remains nested
+  metadata?: {
+    executionTime?: number;
+    filesAccessed?: string[];
+    operationType?: string;
+    [key: string]: any;
+  };
+}
+```
+
+**Important**: Never nest operational data inside a `data` property. LLMs are trained on flat structures where properties like `content`, `files`, etc. are directly accessible at the top level.
+
+Example correct output:
+```javascript
+{
+  success: true,
+  content: "# README\nProject documentation...",
+  exists: true,
+  metadata: {
+    size: 1234,
+    modified: "2024-06-20T10:00:00Z"
+  }
+}
+```
+
+Example incorrect output (DO NOT USE):
+```javascript
+{
+  success: true,
+  data: {  // ❌ Never wrap results in data
+    content: "...",
+    exists: true
+  }
+}
+```
+
 ### Testing Strategy
 
 #### Unit Tests

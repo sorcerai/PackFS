@@ -1,6 +1,6 @@
 {
   "name": "packfs-core",
-  "version": "0.1.20",
+  "version": "0.2.0",
   "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
@@ -105,7 +105,11 @@
     "release:alpha": "npm version prerelease --preid=alpha && npm publish --tag alpha",
     "release:beta": "npm version prerelease --preid=beta && npm publish --tag beta",
     "release:safe": "node scripts/test-and-publish.js",
-    "release:safe:dry": "node scripts/test-and-publish.js --dry-run"
+    "release:safe:dry": "node scripts/test-and-publish.js --dry-run",
+    "update-context": "node scripts/update-context-network.js",
+    "extract-docs": "node scripts/extract-external-docs.js",
+    "feature-status": "node scripts/feature-status.js",
+    "maintenance": "npm run update-context && npm run extract-docs && npm run feature-status"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

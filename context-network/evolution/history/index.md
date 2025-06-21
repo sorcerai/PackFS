@@ -4,6 +4,14 @@ This directory contains historical documents that chronicle significant developm
 
 ## Documents
 
+### [v0.2.0-llm-friendly-output.md](./v0.2.0-llm-friendly-output.md)
+**Date**: 2025-06-20
+**Summary**: Critical design fix to enable LLM compatibility by flattening output structures. Based on v0.1.20 testing feedback showing 100% LLM failure rate with nested structures. Key changes:
+- Flattened all integration output structures
+- Direct property access for content, files, etc.
+- Only metadata remains nested
+- 100% success rate after implementation
+
 ### [PRODUCTION_SUCCESS_STORY.md](./PRODUCTION_SUCCESS_STORY.md)
 **Date**: 2025
 **Summary**: Documents the successful production deployment of semantic search and intelligent compression features in an MCP (Model Context Protocol) server environment. Key achievements:

@@ -26,6 +26,7 @@ import {
 } from './types.js';
 import { FileTargetProcessor, NaturalLanguageProcessor } from './intent-processor.js';
 import { Logger, CategoryLogger } from '../core/logger.js';
+import { ErrorRecoveryEngine } from './error-recovery.js';
 
 interface SemanticIndexEntry {
   path: string;
@@ -58,6 +59,7 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   private readonly maxFileSize: number;
   private readonly indexVersion = '1.0.0';
   private readonly logger: CategoryLogger;
+  private readonly errorRecovery: ErrorRecoveryEngine;
 
   private readonly excludedDirectories = new Set([
     'node_modules',
@@ -88,6 +90,7 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     this.indexPath = join(basePath, '.packfs', 'semantic-index.json');
     this.maxFileSize = 50 * 1024 * 1024; // 50MB max file size for indexing
     this.logger = Logger.getInstance().createChildLogger('DiskSemanticBackend');
+    this.errorRecovery = new ErrorRecoveryEngine(basePath);
 
     this.index = {
       version: this.indexVersion,
@@ -161,10 +164,15 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     }
 
     if (matchingFiles.length === 0) {
+      // Generate suggestions based on the target criteria
+      const searchQuery = intent.target.semanticQuery || intent.target.criteria?.content || intent.target.pattern || '';
+      const suggestions = await this.errorRecovery.suggestForEmptySearchResults(searchQuery, 'semantic');
+      
       return {
         success: false,
         message: 'No files found matching target criteria',
         exists: false,
+        suggestions,
       };
     }
 
@@ -871,17 +879,29 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
 
       // For verify_exists, success means the operation worked, exists indicates file presence
       if (intent.purpose === 'verify_exists') {
+        const suggestions = await this.errorRecovery.suggestForFileNotFound(relativePath);
         return {
           success: true,
           exists: false,
           message: `File not found: ${relativePath}`,
+          suggestions,
         };
       }
+
+      // Generate helpful suggestions for file not found
+      const suggestions = await this.errorRecovery.suggestForFileNotFound(relativePath);
+      const context = {
+        operation: 'accessFile',
+        requestedPath: relativePath,
+        error: `File not found: ${relativePath}`,
+        suggestions,
+      };
 
       return {
         success: false,
         exists: false,
-        message: `File not found: ${relativePath}`,
+        message: this.errorRecovery.formatSuggestions(context),
+        suggestions,
       };
     }
 
@@ -1416,6 +1436,19 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
   private async findFiles(intent: DiscoveryIntent): Promise<DiscoveryResult> {
     const matchingFiles = await this.findFilesByTarget(intent.target);
 
+    // If no matches found, provide suggestions
+    if (matchingFiles.length === 0) {
+      const searchQuery = intent.target.pattern || intent.target.criteria?.name || '';
+      const suggestions = await this.errorRecovery.suggestForEmptySearchResults(searchQuery, 'filename');
+      return {
+        success: true,
+        files: [],
+        totalFound: 0,
+        searchTime: 0,
+        suggestions,
+      };
+    }
+
     const files = await Promise.all(
       matchingFiles.map(async (path) => {
         const metadata = await this.getFileMetadata(path);
@@ -1459,6 +1492,18 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       }
     }
 
+    // If no matches found, provide suggestions
+    if (matches.length === 0) {
+      const suggestions = await this.errorRecovery.suggestForEmptySearchResults(query, 'content');
+      return {
+        success: true,
+        files: [],
+        totalFound: 0,
+        searchTime: 0,
+        suggestions,
+      };
+    }
+
     return {
       success: true,
       files: matches.slice(0, intent.options?.maxResults || this.config.defaultMaxResults),
@@ -1469,6 +1514,21 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
 
   private async searchSemantic(intent: DiscoveryIntent): Promise<DiscoveryResult> {
     const matchingPaths = this.findBySemanticQuery(intent.target.semanticQuery || '');
+
+    // If no matches found, provide suggestions
+    if (matchingPaths.length === 0) {
+      const suggestions = await this.errorRecovery.suggestForEmptySearchResults(
+        intent.target.semanticQuery || '',
+        'semantic'
+      );
+      return {
+        success: true,
+        files: [],
+        totalFound: 0,
+        searchTime: 0,
+        suggestions,
+      };
+    }
 
     const files = await Promise.all(
       matchingPaths.map(async (path, index) => {

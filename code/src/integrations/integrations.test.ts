@@ -107,7 +107,7 @@ describe('Framework Integrations', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toContain('Test Project');
+      expect(result.content).toContain('Test Project');
       expect(result.metadata.operationType).toBe('natural_language');
     });
 
@@ -119,7 +119,7 @@ describe('Framework Integrations', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.content).toContain('test-project');
+      expect(result.content).toContain('test-project');
     });
 
     it('should handle file creation with natural language', async () => {
@@ -128,7 +128,7 @@ describe('Framework Integrations', () => {
       });
 
       expect(result.success).toBe(true);
-      expect(result.data.created).toBe(true);
+      expect(result.created).toBe(true);
     });
 
     it('should validate parameters correctly', () => {
@@ -158,6 +158,8 @@ describe('Framework Integrations', () => {
       });
 
       expect(result.success).toBe(true);
+      expect(Array.isArray(result.results)).toBe(true);
+      expect(result.results.length).toBeGreaterThan(0);
       expect(result.results.some((f: any) => f.path.includes('config.json'))).toBe(true);
     });
   });

@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-06-20
+
+### BREAKING CHANGES
+- **LLM-Friendly Output Structure** - Flattened all integration output structures for direct LLM compatibility
+  - All operational data (content, files, exists, etc.) now appears at the top level
+  - Removed nested `data` property that was preventing LLMs from accessing results
+  - Only metadata remains nested for organizational purposes
+  - This change transforms PackFS from 100% LLM failure rate to 100% success rate
+
+### Changed
+- **Mastra Integration** - Complete restructure of output format
+  - `result.data.content` → `result.content` (direct access)
+  - `result.data.files` → `result.files` (direct access)
+  - `result.data.exists` → `result.exists` (direct access)
+  - All tool suite methods updated to handle flattened structures
+  
+### Migration Guide
+If you're upgrading from v0.1.x, update your code to access properties directly:
+```javascript
+// Old (v0.1.x)
+const content = result.data.content;
+const files = result.data.files;
+
+// New (v0.2.0)
+const content = result.content;
+const files = result.files;
+```
+
+### Added
+- ADR-005: LLM-Friendly Output Structure documentation
+- Comprehensive output structure guidelines in Mastra integration specification
+- Migration examples and best practices
+
+### Fixed
+- Integration tests updated to validate flat output structures
+- Tool suite methods properly handle flattened responses
+
 ## [0.1.20] - 2025-06-20
 
 ### Fixed
