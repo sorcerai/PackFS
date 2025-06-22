@@ -130,7 +130,10 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
     return {
       name: 'semantic_filesystem',
       description:
-        'Perform intelligent file operations using semantic understanding. Supports natural language queries like "create a config file", "find all documentation", or "read the main script file".',
+        'Perform intelligent file operations using semantic understanding. Supports natural language queries like "create a config file", "find all documentation", or "read the main script file".\n\n' +
+        'IMPORTANT: Use the workingDirectory parameter to operate on different project directories. For example:\n' +
+        '- To read from a specific project: {"operation": "access", "purpose": "read", "target": {"path": "README.md"}, "workingDirectory": "/path/to/project"}\n' +
+        '- To search in a context network: {"operation": "discover", "purpose": "search_semantic", "target": {"query": "configuration"}, "workingDirectory": "/path/to/context-network"}',
       parameters: {
         type: 'object',
         properties: {
@@ -141,7 +144,7 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
           },
           workingDirectory: {
             type: 'string',
-            description: 'Override the base working directory for this operation (absolute path)',
+            description: 'IMPORTANT: Specify the project directory or context network path to operate on. This allows you to work with different projects without reinitializing the tool. Use absolute paths (e.g., "/projects/my-project/context-network"). This parameter should be used whenever you need to access files in a specific project directory.',
           },
           operation: {
             type: 'string',
