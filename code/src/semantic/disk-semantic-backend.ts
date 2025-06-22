@@ -134,9 +134,19 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     this.logger.debug('Processing file access intent', intent);
     await this.ensureIndexLoaded();
 
+    // Extract working directory from intent if provided
+    const workingDirectory = intent.options?.workingDirectory;
+    const effectiveBasePath = workingDirectory || this.basePath;
+
     // Handle direct path access first
     if (intent.target.path) {
       const relativePath = this.normalizePath(intent.target.path);
+      
+      // If working directory is provided, use it for file operations
+      if (workingDirectory) {
+        return this.handleSingleFileAccessWithBasePath(relativePath, intent, effectiveBasePath);
+      }
+      
       return this.handleSingleFileAccess(relativePath, intent);
     }
 
@@ -192,10 +202,14 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     this.logger.debug('Processing content update intent', intent);
     await this.ensureIndexLoaded();
 
+    // Extract working directory from intent if provided
+    const workingDirectory = intent.options?.workingDirectory;
+    const effectiveBasePath = workingDirectory || this.basePath;
+
     // Handle direct path access first
     if (intent.target.path) {
       const relativePath = this.normalizePath(intent.target.path);
-      const fullPath = this.getFullPath(relativePath);
+      const fullPath = workingDirectory ? join(effectiveBasePath, relativePath) : this.getFullPath(relativePath);
       const exists = await this.fileExists(fullPath);
 
       // Handle different update purposes
@@ -224,8 +238,8 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       // Perform the update
       const result = await this.performContentUpdate(relativePath, fullPath, intent, exists);
 
-      // Update semantic index
-      if (result.success) {
+      // Update semantic index only if using default base path
+      if (result.success && !workingDirectory) {
         this.logger.debug('Updating semantic index for file', { path: relativePath });
         await this.updateFileIndex(relativePath);
         await this.saveIndex();
@@ -851,6 +865,111 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
     }
   }
 
+  private async handleSingleFileAccessWithBasePath(
+    relativePath: string,
+    intent: FileAccessIntent,
+    basePath: string
+  ): Promise<FileAccessResult> {
+    const fullPath = join(basePath, relativePath);
+    const exists = await this.fileExists(fullPath);
+
+    if (!exists) {
+      if (intent.purpose === 'create_or_get') {
+        // Create empty file
+        const dir = dirname(fullPath);
+        await fs.mkdir(dir, { recursive: true });
+        await fs.writeFile(fullPath, '');
+
+        // Note: Skip index update for runtime base path operations
+        const metadata = await this.getFileMetadataWithBasePath(relativePath, basePath);
+        return {
+          success: true,
+          content: '',
+          metadata,
+          exists: true,
+        };
+      }
+
+      // For verify_exists, success means the operation worked, exists indicates file presence
+      if (intent.purpose === 'verify_exists') {
+        const suggestions = await this.errorRecovery.suggestForFileNotFound(relativePath);
+        return {
+          success: true,
+          exists: false,
+          message: `File not found: ${relativePath}`,
+          suggestions,
+        };
+      }
+
+      // Generate helpful suggestions for file not found
+      const suggestions = await this.errorRecovery.suggestForFileNotFound(relativePath);
+      const context = {
+        operation: 'accessFile',
+        requestedPath: relativePath,
+        error: `File not found: ${relativePath}`,
+        suggestions,
+      };
+
+      return {
+        success: false,
+        exists: false,
+        message: this.errorRecovery.formatSuggestions(context),
+        suggestions,
+      };
+    }
+
+    // Handle different access purposes
+    switch (intent.purpose) {
+      case 'read':
+        const content = await fs.readFile(fullPath, intent.preferences?.encoding || 'utf8');
+        return {
+          success: true,
+          content,
+          metadata: intent.preferences?.includeMetadata
+            ? await this.getFileMetadataWithBasePath(relativePath, basePath)
+            : undefined,
+          exists: true,
+        };
+
+      case 'preview':
+        return {
+          success: true,
+          preview: await this.generateFilePreview(fullPath),
+          metadata: await this.getFileMetadataWithBasePath(relativePath, basePath),
+          exists: true,
+        };
+
+      case 'metadata':
+        return {
+          success: true,
+          metadata: await this.getFileMetadataWithBasePath(relativePath, basePath),
+          exists: true,
+        };
+
+      case 'verify_exists':
+        return {
+          success: true,
+          exists: true,
+        };
+
+      case 'create_or_get':
+        const existingContent = await fs.readFile(fullPath, intent.preferences?.encoding || 'utf8');
+        return {
+          success: true,
+          content: existingContent,
+          metadata: await this.getFileMetadataWithBasePath(relativePath, basePath),
+          exists: true,
+        };
+
+      default:
+        return {
+          success: false,
+          exists: true,
+          message: `Unsupported access purpose: ${intent.purpose}`,
+        };
+    }
+  }
+
   private async handleSingleFileAccess(
     relativePath: string,
     intent: FileAccessIntent
@@ -972,6 +1091,22 @@ export class DiskSemanticBackend extends SemanticFileSystemInterface {
       mimeType: indexEntry?.mimeType || this.getMimeType(relativePath),
       tags: indexEntry?.keywords,
       semanticSignature: indexEntry?.semanticSignature,
+    };
+  }
+
+  private async getFileMetadataWithBasePath(relativePath: string, basePath: string): Promise<FileMetadata> {
+    const fullPath = join(basePath, relativePath);
+    const stats = await fs.stat(fullPath);
+
+    return {
+      path: relativePath,
+      size: stats.size,
+      mtime: stats.mtime,
+      isDirectory: stats.isDirectory(),
+      permissions: stats.mode,
+      mimeType: this.getMimeType(relativePath),
+      tags: undefined, // No index lookup for runtime base path
+      semanticSignature: undefined, // No index lookup for runtime base path
     };
   }
 

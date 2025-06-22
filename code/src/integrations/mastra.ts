@@ -139,6 +139,10 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
             description:
               'Natural language description of the file operation to perform (e.g., "create a file called notes.txt with my thoughts", "find all JavaScript files", "read the README file")',
           },
+          workingDirectory: {
+            type: 'string',
+            description: 'Override the base working directory for this operation (absolute path)',
+          },
           operation: {
             type: 'string',
             description: 'Structured operation type when not using natural language',
@@ -218,6 +222,10 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
         {
           input: '{"operation": "access", "purpose": "read", "target": {"path": "README.md"}}',
           description: 'Structured file reading operation',
+        },
+        {
+          input: '{"operation": "access", "purpose": "read", "target": {"path": "context-network/discovery.md"}, "workingDirectory": "/projects/project-a"}',
+          description: 'Read file from a specific project directory',
         },
       ],
     };
@@ -347,12 +355,19 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
       );
     }
 
+    // Merge workingDirectory into options if provided
+    const operationOptions = {
+      ...params.options,
+      ...(params.workingDirectory && { workingDirectory: params.workingDirectory })
+    };
+
     switch (params.operation) {
       case 'access':
         return await config.filesystem.accessFile({
           purpose: params.purpose,
           target: params.target,
           preferences: params.options,
+          options: operationOptions,
         });
 
       case 'update':
@@ -360,14 +375,14 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
           purpose: params.purpose,
           target: params.target,
           content: params.content,
-          options: params.options,
+          options: operationOptions,
         });
 
       case 'discover':
         return await config.filesystem.discoverFiles({
           purpose: params.purpose,
           target: params.target,
-          options: params.options,
+          options: operationOptions,
         });
 
       case 'organize':
@@ -375,14 +390,14 @@ export class MastraSemanticFilesystemTool implements FrameworkToolAdapter<Mastra
           purpose: params.purpose,
           source: params.source,
           destination: params.destination,
-          options: params.options,
+          options: operationOptions,
         });
 
       case 'remove':
         return await config.filesystem.removeFiles({
           purpose: params.purpose,
           target: params.target,
-          options: params.options,
+          options: operationOptions,
         });
 
       default:
