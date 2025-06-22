@@ -1,6 +1,6 @@
 {
   "name": "packfs-core",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Semantic filesystem operations for LLM agent frameworks with natural language understanding",
   "keywords": [
     "llm",
