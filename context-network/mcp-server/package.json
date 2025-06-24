@@ -1,0 +1,24 @@
+{
+  "name": "general-context-network-mcp",
+  "version": "1.0.0",
+  "description": "General Context Network MCP Server for conversation memory and cross-session continuity",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest",
+    "packfs-core": "^0.2.0"
+  },
+  "keywords": [
+    "mcp",
+    "context",
+    "memory",
+    "conversation",
+    "claude"
+  ],
+  "author": "Context Network System",
+  "license": "MIT"
+}
