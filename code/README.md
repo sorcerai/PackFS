@@ -19,6 +19,7 @@ Inspired by the research in ["LLM-based Semantic File System for Large Codebases
 - 🔄 **Backward Compatibility**: Adapter pattern allows gradual migration from traditional filesystem operations
 - 💾 **Multiple Backends**: Memory and persistent disk backends with semantic indexing
 - 🔒 **Security Controls**: Path validation, sandboxing, and permission systems
+- 🏢 **Dynamic Working Directory**: Runtime-configurable paths for multi-project support (NEW)
 
 ## Installation
 
@@ -201,6 +202,38 @@ const tools = createPackfsTools({
 
 // Generated tools: fileReader, fileWriter, fileSearcher, fileLister
 // Each tool includes automatic security validation and error handling
+```
+
+**Dynamic Working Directory** (NEW):
+
+```typescript
+// Access files from different projects without reinitializing
+const mastraTool = createMastraSemanticFilesystemTool({
+  workingDirectory: '/main/workspace',
+  filesystem: backend
+});
+
+// Read from project A
+const resultA = await mastraTool.execute({
+  operation: 'access',
+  purpose: 'read',
+  target: { path: 'context.md' },
+  workingDirectory: '/projects/project-a'  // Runtime override
+});
+
+// Read from project B
+const resultB = await mastraTool.execute({
+  operation: 'access',
+  purpose: 'read',
+  target: { path: 'context.md' },
+  workingDirectory: '/projects/project-b'  // Different project
+});
+
+// Also works with natural language
+const result = await mastraTool.execute({
+  naturalLanguageQuery: 'find all documentation files',
+  workingDirectory: '/projects/project-c'
+});
 ```
 
 #### LangChain.js

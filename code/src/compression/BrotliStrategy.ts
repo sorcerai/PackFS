@@ -63,9 +63,21 @@ export class BrotliStrategy extends CompressionStrategy {
     return result;
   }
   
-  createDecompressor(_chunk: CompressedChunk): NodeJS.ReadableStream {
+  createDecompressor(chunk: CompressedChunk): NodeJS.ReadableStream {
+    const { Readable } = require('stream');
     const decompressor = zlib.createBrotliDecompress();
-    return decompressor;
+    
+    // Create a readable stream from the compressed data
+    const inputStream = new Readable({
+      read() {}
+    });
+    
+    // Push the compressed data and signal end
+    inputStream.push(chunk.data);
+    inputStream.push(null);
+    
+    // Pipe through the decompressor
+    return inputStream.pipe(decompressor);
   }
   
   estimateRatio(_data: Buffer, hints: CompressionHints): number {

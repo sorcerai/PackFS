@@ -85,7 +85,7 @@ export class ZstdStrategy extends CompressionStrategy {
     }
     
     // Good balance for most use cases
-    if (hints.accessFrequency > 0.3 && hints.accessFrequency < 0.8) {
+    if (hints.accessFrequency >= 0.3 && hints.accessFrequency < 0.8) {
       return true;
     }
     
@@ -102,7 +102,7 @@ export class ZstdStrategy extends CompressionStrategy {
       return 1; // Fastest compression
     }
     
-    if (hints.accessFrequency > 0.5) {
+    if (hints.accessFrequency >= 0.5) {
       return 3; // Balanced
     }
     

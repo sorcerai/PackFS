@@ -211,7 +211,7 @@ describe('Logger', () => {
       }
     });
     
-    it('should create log file and directory', () => {
+    it('should create log file and directory', (done) => {
       const fileTransport = new FileTransport(testLogPath);
       logger.configure({
         level: LogLevel.INFO,
@@ -219,16 +219,21 @@ describe('Logger', () => {
       });
       
       logger.info('test', 'file message');
-      fileTransport.close();
       
-      expect(fs.existsSync(testLogPath)).toBe(true);
-      const content = fs.readFileSync(testLogPath, 'utf8');
-      expect(content).toContain('file message');
-      expect(content).toContain('[INFO]');
-      expect(content).toContain('[test]');
+      // Give the stream time to flush
+      setTimeout(() => {
+        fileTransport.close();
+        
+        expect(fs.existsSync(testLogPath)).toBe(true);
+        const content = fs.readFileSync(testLogPath, 'utf8');
+        expect(content).toContain('file message');
+        expect(content).toContain('[INFO]');
+        expect(content).toContain('[test]');
+        done();
+      }, 100);
     });
     
-    it('should append to existing file', () => {
+    it('should append to existing file', (done) => {
       // Create file with initial content
       fs.mkdirSync('./test-logs', { recursive: true });
       fs.writeFileSync(testLogPath, 'Initial content\n');
@@ -240,14 +245,19 @@ describe('Logger', () => {
       });
       
       logger.info('test', 'appended message');
-      fileTransport.close();
       
-      const content = fs.readFileSync(testLogPath, 'utf8');
-      expect(content).toContain('Initial content');
-      expect(content).toContain('appended message');
+      // Give the stream time to flush
+      setTimeout(() => {
+        fileTransport.close();
+        
+        const content = fs.readFileSync(testLogPath, 'utf8');
+        expect(content).toContain('Initial content');
+        expect(content).toContain('appended message');
+        done();
+      }, 100);
     });
     
-    it('should overwrite existing file when append is false', () => {
+    it('should overwrite existing file when append is false', (done) => {
       // Create file with initial content
       fs.mkdirSync('./test-logs', { recursive: true });
       fs.writeFileSync(testLogPath, 'Initial content that should be overwritten\n');
@@ -259,11 +269,16 @@ describe('Logger', () => {
       });
       
       logger.info('test', 'new message');
-      fileTransport.close();
       
-      const content = fs.readFileSync(testLogPath, 'utf8');
-      expect(content).not.toContain('Initial content');
-      expect(content).toContain('new message');
+      // Give the stream time to flush
+      setTimeout(() => {
+        fileTransport.close();
+        
+        const content = fs.readFileSync(testLogPath, 'utf8');
+        expect(content).not.toContain('Initial content');
+        expect(content).toContain('new message');
+        done();
+      }, 100);
     });
   });
   

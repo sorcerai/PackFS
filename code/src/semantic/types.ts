@@ -57,6 +57,11 @@ export interface FileAccessIntent {
     includeMetadata?: boolean;
     createIfMissing?: boolean;
   };
+  
+  // Options for operation behavior
+  options?: {
+    workingDirectory?: string; // Override base path for this operation
+  };
 }
 
 export interface FileAccessResult extends Omit<SemanticOperationResult, 'metadata'> {
@@ -77,6 +82,7 @@ export interface ContentUpdateIntent {
     backupOriginal?: boolean;
     verifyContent?: boolean;
     mode?: number;
+    workingDirectory?: string; // Override base path for this operation
   };
 }
 
@@ -96,6 +102,7 @@ export interface OrganizationIntent {
     overwrite?: boolean;
     preserveTimestamps?: boolean;
     groupingCriteria?: string;
+    workingDirectory?: string; // Override base path for this operation
   };
 }
 
@@ -117,6 +124,7 @@ export interface DiscoveryIntent {
     sortBy?: 'name' | 'size' | 'modified' | 'relevance';
     includeContent?: boolean;
     recursive?: boolean;
+    workingDirectory?: string; // Override base path for this operation
   };
 }
 
@@ -139,6 +147,7 @@ export interface RemovalIntent {
     recursive?: boolean;
     dryRun?: boolean;
     moveToTrash?: boolean;
+    workingDirectory?: string; // Override base path for this operation
   };
 }
 

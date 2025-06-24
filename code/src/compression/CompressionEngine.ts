@@ -163,8 +163,17 @@ export class CompressionEngine {
       }
     }
     
-    // Sort by estimated compression ratio
-    analysis.estimations.sort((a, b) => a.estimatedRatio - b.estimatedRatio);
+    // Sort by priority for hot files, otherwise by compression ratio
+    if (hints.isHot) {
+      // For hot files, prioritize speed
+      analysis.estimations.sort((a, b) => {
+        const priorityOrder: Record<string, number> = { speed: 0, balanced: 1, ratio: 2 };
+        return (priorityOrder[a.priority] || 999) - (priorityOrder[b.priority] || 999);
+      });
+    } else {
+      // For cold files, prioritize compression ratio
+      analysis.estimations.sort((a, b) => a.estimatedRatio - b.estimatedRatio);
+    }
     analysis.recommendedStrategy = analysis.estimations[0]?.algorithm || 'none';
     
     return analysis;
